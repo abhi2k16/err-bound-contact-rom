@@ -145,6 +145,29 @@ def fig_breaker() -> None:
     save(fig, "fig_breaker")
 
 
+def fig_components() -> None:
+    """Median value of each estimator component per basis on B2 (dot plot; log axis, zeros drawn hollow at the floor)."""
+    path = RES / "b2_e3" / "e3_b2.npz"
+    comps = (("eta_eq", r"$\eta_{eq}$"), ("eta_sign", r"$\eta_{sign}$"), ("eta_gap", r"$\eta_{gap}$"),
+             ("eta_comp", r"$\eta_{comp}$"))
+    floor = 1e-14
+    fig, axes = plt.subplots(1, 4, figsize=(6.3, 2.0), sharey=True)
+    for ax, (key, title) in zip(axes, comps):
+        for row, kind in enumerate(KINDS):
+            v = float(np.median(pooled(path, kind, key)))
+            zero = v <= floor
+            ax.plot(max(v, floor), row, "o", ms=4.5, color=BLUE, mfc="white" if zero else BLUE, mew=1.0)
+            if zero:
+                ax.text(floor * 3, row, "0", fontsize=6.5, va="center", color=MUTED)
+        ax.set(xscale="log", xlim=(floor / 3, 1e1), title=title)
+        ax.set_yticks(range(len(KINDS)), [LABEL[k] for k in KINDS])
+        ax.invert_yaxis()
+        ax.tick_params(labelsize=6.5)
+    fig.supxlabel("median over test queries and dual dimensions (B2)", fontsize=7, y=-0.04)
+    fig.tight_layout()
+    save(fig, "fig_components")
+
+
 if __name__ == "__main__":
-    for make in (fig_silent_failure, fig_bound, fig_breakeven, fig_breaker):
+    for make in (fig_silent_failure, fig_bound, fig_breakeven, fig_breaker, fig_components):
         make()
