@@ -72,7 +72,7 @@ def fig_silent_failure() -> None:
 
 def fig_bound() -> None:
     """Certified bound vs true energy error, one panel per basis (pooled over r_lambda), B1 and B2."""
-    fig, axes = plt.subplots(2, 5, figsize=(6.3, 3.9), sharex="row", sharey="row")
+    fig, axes = plt.subplots(2, 5, figsize=(6.3, 3.3), sharex="row", sharey="row")
     for row, (bench, path) in enumerate((("B1", RES / "b1_e3" / "e3_b1.npz"), ("B2", RES / "b2_e3" / "e3_b2.npz"))):
         data = {k: (np.maximum(pooled(path, k, "err_abs"), 1e-16), np.maximum(pooled(path, k, "bound1"), 1e-16))
                 for k in KINDS}
@@ -152,7 +152,7 @@ def fig_components() -> None:
     comps = (("eta_eq", r"$\eta_{eq}$"), ("eta_sign", r"$\eta_{sign}$"), ("eta_gap", r"$\eta_{gap}$"),
              ("eta_comp", r"$\eta_{comp}$"))
     floor = 1e-14
-    fig, axes = plt.subplots(1, 4, figsize=(6.3, 2.0), sharey=True)
+    fig, axes = plt.subplots(1, 4, figsize=(6.3, 1.8), sharey=True)
     for ax, (key, title) in zip(axes, comps):
         for row, kind in enumerate(KINDS):
             v = float(np.median(pooled(path, kind, key)))
