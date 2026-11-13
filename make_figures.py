@@ -102,7 +102,7 @@ def load_sweep(path: Path) -> dict:
 
 def fig_breakeven() -> None:
     """Predicted vs measured speedup against problem size for both stiffness regimes, B2 and B3."""
-    fig, axes = plt.subplots(1, 2, figsize=(6.3, 2.7), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(6.3, 2.0), sharey=True)
     for ax, (title, path) in zip(axes, (("B2 membrane", RES / "b2_e4" / "e4_sweep.npz"),
                                         ("B3 two-body", RES / "b3_e4" / "e4_sweep_b3.npz"))):
         d = load_sweep(path)
@@ -122,7 +122,7 @@ def fig_breaker() -> None:
     configs = [("nmf", 8), ("nmf", 16), ("cpg", 8), ("cpg", 16)]
     labels = [LABEL[k] + "\n" + rf"$r_\lambda={r}$" for k, r in configs]
     x = np.arange(len(configs))
-    fig, axes = plt.subplots(1, 2, figsize=(6.3, 2.5))
+    fig, axes = plt.subplots(1, 2, figsize=(6.3, 2.2))
     for ax, metric, ylabel in zip(axes, ("fallback", "speedup"), ("share sent to full-order solver", "speedup over full-order solve")):
         for off, name, color in ((-0.18, "test", BLUE), (0.18, "extrap", ORANGE)):
             vals = [float(d[f"{k}_{r}_eta_adm_{name}_{metric}"]) for k, r in configs]
