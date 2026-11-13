@@ -154,9 +154,9 @@ def main() -> None:
     cfg = override_b3(Config(run_id=f"{args.bench}_{args.experiment}"), args.b3_n_xy, args.b3_nz)
     if args.experiment == "summary":
         return run_summary(cfg)
-    print("metadata:", save_run_metadata(cfg))
-    print("Environment:", json.dumps(environment_info()))
     problem = BENCHMARKS[args.bench](cfg)
+    print("metadata:", save_run_metadata(cfg, problem))
+    print("Environment:", json.dumps(environment_info()))
     if args.experiment in ("e1", "all"):
         run_e1(cfg, problem)
     if args.experiment in ("e3", "all"):

@@ -31,11 +31,14 @@ def environment_info() -> dict:
     }
 
 
-def save_run_metadata(cfg: Config) -> Path:
-    """Write ``config.json`` (config + environment) into the run directory."""
+def save_run_metadata(cfg: Config, problem=None) -> Path:
+    """Write ``config.json`` (config + environment, plus the benchmark's sizes if ``problem`` is given)."""
     run_dir = Path(cfg.out_dir) / cfg.run_id
     run_dir.mkdir(parents=True, exist_ok=True)
     meta = {"config": asdict(cfg), "environment": environment_info()}
+    if problem is not None:
+        meta["problem"] = {"name": problem.name, "n_dof": int(problem.n_dof), "n_contact": int(problem.n_contact),
+                           "k_varies": bool(problem.k_varies)}
     path = run_dir / "config.json"
     path.write_text(json.dumps(meta, indent=2, default=str), encoding="utf-8")
     return path
