@@ -22,7 +22,7 @@
 \draw[arr] (repair) -- (calib);
 % ---------- online row ----------
 \node[on, below=14mm of snap] (solve) {reduced LCP solve\\for query $\mu$};
-\node[bad, right=of solve] (kkt) {$\|R_{\mathrm{red}}\|_\infty\approx10^{-16}$\\(not a certificate)};
+\node[bad, right=of solve] (kkt) {$\|R_{\mathrm{red}}\|_\infty\lesssim10^{-14}$\\(not a certificate)};
 \node[on, right=of kkt] (lift) {lift\\$\tilde u=Vu_r,\ \tilde\lambda=U\lambda_r$};
 \node[on, right=of lift] (eta) {$\eta_{\mathrm{adm}}$, Eq.~\eqref{eq:eta-adm}\\$\mathcal{O}(n_c(r_u+r_\lambda))$};
 \draw[arr] (solve) -- (kkt);
