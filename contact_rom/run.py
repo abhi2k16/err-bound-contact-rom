@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 from dataclasses import replace
 
 import numpy as np
 
+from .acceptance import criterion4, print_summary, score_benchmark
 from .audit import run_basis_audit_sets, run_silent_failure_audit
 from .bases import Snapshots, build_snapshots
 from .benchmark_3d import build_b3
@@ -126,15 +128,23 @@ def run_e5(cfg: Config, problem: ContactProblem) -> None:
     print("saved:", save_breaker(cfg, table))
 
 
+def run_summary(cfg: Config) -> None:
+    """Step 7: acceptance criteria on B1 and B2 (recomputed) and criterion 4 from the saved E4 sweep."""
+    results = {name: score_benchmark(cfg, BENCHMARKS[name](cfg), prepare) for name in ("b1", "b2")}
+    print_summary(results, criterion4(Path(cfg.out_dir) / "b2_e4" / "e4_sweep.npz"))
+
+
 def main() -> None:
-    """CLI: ``python -m contact_rom [e1|e3|e4|e5|all] [--bench b1|b2]``."""
+    """CLI: ``python -m contact_rom [e1|e3|e4|e5|summary|all] [--bench b1|b2]``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "all"])
+    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "all"])
     parser.add_argument("--bench", default="b1", choices=sorted(BENCHMARKS))
     parser.add_argument("--b3-n-xy", type=int, default=None, help="override B3 elements per side")
     parser.add_argument("--b3-nz", type=int, default=None, help="override B3 element layers per body")
     args = parser.parse_args()
     cfg = override_b3(Config(run_id=f"{args.bench}_{args.experiment}"), args.b3_n_xy, args.b3_nz)
+    if args.experiment == "summary":
+        return run_summary(cfg)
     print("metadata:", save_run_metadata(cfg))
     print("Environment:", json.dumps(environment_info()))
     problem = BENCHMARKS[args.bench](cfg)
