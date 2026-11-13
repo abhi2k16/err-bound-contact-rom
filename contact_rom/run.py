@@ -13,10 +13,12 @@ from .benchmarks import ContactProblem, build_b1, build_b2
 from .calibration import calibrate_all
 from .config import Config
 from .dual_bases import DUAL_KINDS
+from .e4 import criterion4_verdict, crossovers, run_e4_entries, run_sweep
 from .environment import environment_info, save_run_metadata
 from .estimator import tau_adm_from_snapshots
 from .fom import cross_check_methods, verify_fom_on_samples
 from .metrics import assert_theorem1, criterion1_verdict, criterion2_verdict
+from .report_e4 import print_e4_entries, print_regime_summary, print_sweep, save_e4
 from .report import (print_audit_table, print_calibrated_summary, print_calibrated_table, print_comparison_table,
                      print_estimator_table, print_step1_summary, save_audit)
 
@@ -68,10 +70,25 @@ def run_e3(cfg: Config, problem: ContactProblem) -> None:
     print("saved:", save_audit(audit, cfg, f"e3_{problem.name.lower()}"))
 
 
+def run_e4(cfg: Config, problem: ContactProblem) -> None:
+    """E4: predicted vs measured speedup for every basis, then the mesh-size sweep (membrane only)."""
+    snaps, mu_test, _ = prepare(cfg, problem)
+    audits = run_basis_audit_sets(problem, cfg, snaps, {"test": mu_test}, DUAL_KINDS, cfg.r_dual_list_e3, repair=True)
+    rows, fom, _ = run_e4_entries(cfg, problem, snaps, mu_test, audits["test"])
+    print_e4_entries(rows, float(np.median(fom.k_fom)), float(np.median(fom.m_act)), problem.name)
+    print_regime_summary(rows)
+    print("saved:", save_e4(cfg, f"e4_{problem.name.lower()}", rows))
+    if problem.name == "B2":
+        sweep = run_sweep(cfg)
+        cross = crossovers(sweep)
+        print_sweep(sweep, cross, criterion4_verdict(cross))
+        print("saved:", save_e4(cfg, "e4_sweep", sweep))
+
+
 def main() -> None:
-    """CLI: ``python -m contact_rom [e1|e3|all] [--bench b1|b2]``."""
+    """CLI: ``python -m contact_rom [e1|e3|e4|all] [--bench b1|b2]``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "all"])
+    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "all"])
     parser.add_argument("--bench", default="b1", choices=sorted(BENCHMARKS))
     args = parser.parse_args()
     cfg = Config(run_id=f"{args.bench}_{args.experiment}")
@@ -82,6 +99,8 @@ def main() -> None:
         run_e1(cfg, problem)
     if args.experiment in ("e3", "all"):
         run_e3(cfg, problem)
+    if args.experiment in ("e4", "all"):
+        run_e4(cfg, problem)
 
 
 if __name__ == "__main__":

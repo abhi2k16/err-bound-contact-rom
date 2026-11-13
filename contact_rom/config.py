@@ -47,6 +47,15 @@ class Config:
     err_silent: float = 0.05            # relative energy error counted as failure
     n_val: int = 40                     # held-out validation queries for tau_adm calibration
     tau_margin: float = 0.9             # tau = margin * min indicator over validation silent failures
+    c_fact: float = 1.0                 # Eq. (4) factorisation constant
+    c_solve: float = 1.0                # Eq. (4) triangular-solve constant
+    c_proj: float = 2.0                 # Eq. (5) projection constant (2 FLOPs per multiply-add)
+    e4_repeats: int = 5                 # best-of repeats for wall-clock timings
+    e4_grids: tuple = (8, 12, 16, 20, 24, 32, 40, 48)   # membrane n_grid values for the N sweep
+    e4_n_train: int = 40                # snapshots per sweep size
+    e4_n_test: int = 10                 # test queries per sweep size
+    e4_kind: str = "nmf"                # dual basis used in the sweep
+    e4_r_dual: int = 12                 # r_lambda used in the sweep
     cond_max: float = 1e6               # rank-repair target for cond(B_r K_r^-1 B_r^T)
     r_dual_list_e3: tuple = (4, 8, 12, 16, 24)  # E3 dual dimensions
     out_dir: Path = Path("results")

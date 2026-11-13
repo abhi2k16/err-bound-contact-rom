@@ -20,6 +20,7 @@ from .dual_bases import BasisContext, make_dual_basis
 from .estimator import error_bounds, eta_adm_v2, estimator_terms, trace_norm_B
 from .fom import FomSolution, solve_fom
 from .repair import rank_repair
+from .timing import best_of, time_eta_check
 
 
 def reduced_kkt_residual(rom: ContactROM, rom_res, f_vec: np.ndarray, c_suite: np.ndarray) -> float:
@@ -96,6 +97,7 @@ def evaluate_query(problem: ContactProblem, rom: ContactROM, mu: np.ndarray, fom
         "err_abs": float(np.sqrt(diff @ (K_mat @ diff))),
         "err_lam": float(np.linalg.norm(res.lam - fom.lam_vec) / (np.linalg.norm(fom.lam_vec) + 1e-300)),
         "k_rom": float(res.iterations),
+        "m_r_act": float(np.sum(res.lam_r > 1e-12)),
         "t_online": res.seconds,
         **{k: terms[k] for k in ("eta_eq", "eta_sign", "eta_gap", "eta_comp", "eta_adm")},
         "eta_adm_v2": eta_adm_v2(terms, C_lambda),
@@ -115,8 +117,11 @@ def build_reduced_model(problem: ContactProblem, cfg: Config, snaps: Snapshots, 
         fixed = rank_repair(V_pod, U_mat, K_mat, B_mat, cfg.cond_max)
         V_mat, r_rep, cond_after = fixed.V_mat, fixed.r_rep, fixed.cond_after
     rom = ContactROM(K_mat, -B_mat, V_mat, U_mat, method=cfg.lcp_method)
+    t_offline = time.perf_counter() - start
     meta = {"r_dual_eff": float(U_mat.shape[1]), "r_rep": float(r_rep), "cond_after": cond_after,
-            "t_offline": time.perf_counter() - start}
+            "t_offline": t_offline,
+            "t_proj": best_of(lambda: ContactROM(K_mat, -B_mat, V_mat, U_mat, method=cfg.lcp_method), cfg.e4_repeats),
+            "t_eta": time_eta_check(B_mat, V_mat, U_mat, cfg.e4_repeats)}
     return rom, meta
 
 
