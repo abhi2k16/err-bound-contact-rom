@@ -1,0 +1,43 @@
+% Workflow of the reduced contact model with the online admissibility circuit breaker.
+% Requires: \usepackage{tikz}, \usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,backgrounds}
+\begin{tikzpicture}[
+    font=\footnotesize,
+    node distance=5mm and 6mm,
+    box/.style={draw=black!70, rounded corners=2pt, align=center, minimum height=9mm, text width=24mm, inner sep=3pt, fill=white},
+    off/.style={box, fill=blue!7},
+    on/.style={box, fill=black!4},
+    bad/.style={box, fill=orange!14, draw=orange!70!black},
+    good/.style={box, fill=teal!12, draw=teal!60!black},
+    dec/.style={draw=black!70, diamond, aspect=2.4, align=center, inner sep=0pt, text width=17mm, fill=white},
+    arr/.style={-{Stealth[length=2mm]}, thick, black!70},
+    lab/.style={font=\scriptsize, black!70, inner sep=1pt}
+]
+% ---------- offline row ----------
+\node[off] (snap) {FOM snapshots\\$(u(\mu_i),\lambda(\mu_i))$};
+\node[off, right=of snap] (basis) {bases $V$ (POD),\\$U$ (SVD, NMF, CPG,\\gIS, RID)};
+\node[off, right=of basis] (repair) {rank repair\\$r_u=r_{u,0}+r_{\mathrm{rep}}$\\$\mathrm{cond}\le 10^{6}$};
+\node[off, right=of repair] (calib) {calibrate $\tau_{\mathrm{adm}}$\\on validation\\queries};
+\draw[arr] (snap) -- (basis);
+\draw[arr] (basis) -- (repair);
+\draw[arr] (repair) -- (calib);
+% ---------- online row ----------
+\node[on, below=14mm of snap] (solve) {reduced LCP solve\\for query $\mu$};
+\node[bad, right=of solve] (kkt) {$\|R_{\mathrm{red}}\|_\infty\approx10^{-16}$\\(not a certificate)};
+\node[on, right=of kkt] (lift) {lift\\$\tilde u=Vu_r,\ \tilde\lambda=U\lambda_r$};
+\node[on, right=of lift] (eta) {$\eta_{\mathrm{adm}}$, Eq.~\eqref{eq:eta-adm}\\$\mathcal{O}(n_c(r_u+r_\lambda))$};
+\draw[arr] (solve) -- (kkt);
+\draw[arr] (kkt) -- (lift);
+\draw[arr] (lift) -- (eta);
+% ---------- decision ----------
+\node[dec, below=9mm of eta] (decide) {$\eta_{\mathrm{adm}}\le\tau_{\mathrm{adm}}$?};
+\node[good, left=14mm of decide] (accept) {accept ROM answer};
+\node[box, below=7mm of decide, fill=orange!14, draw=orange!70!black] (fallback) {full-order\\fallback solve};
+\draw[arr] (eta) -- (decide);
+\draw[arr] (decide) -- node[lab, above] {yes} (accept);
+\draw[arr] (decide) -- node[lab, right] {no} (fallback);
+% the calibrated threshold (offline) feeds the decision
+\draw[arr, dashed] (calib.east) -- ++(5mm,0) |- node[lab, pos=0.25, right] {$\tau_{\mathrm{adm}}$} (decide.east);
+% group labels
+\node[lab, anchor=south west] at ([yshift=2mm]snap.north west) {\textbf{Offline}};
+\node[lab, anchor=south west] at ([yshift=2mm]solve.north west) {\textbf{Online, per query}};
+\end{tikzpicture}
