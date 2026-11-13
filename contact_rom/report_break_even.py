@@ -32,11 +32,11 @@ def print_regime_summary(rows: dict) -> None:
               f"decision agrees on {np.mean(pred == meas):.0%}")
 
 
-def print_sweep(rows: list, cross: dict, verdict: dict) -> None:
+def print_sweep(rows: list, cross: dict, verdict: dict, label: str = "membrane") -> None:
     """N-sweep table and crossover / criterion 4 summary."""
     header = (f"{'N':>6}{'n_c':>6}{'b_w':>5}{'m_act':>7}{'r_u':>5}"
               f"{'S_pred aff':>12}{'S_meas aff':>12}{'S_pred var':>12}{'S_meas var':>12}")
-    print("E4 sweep (membrane, NMF r_lambda fixed, rank-repaired)")
+    print(f"E4 sweep ({label}, NMF r_lambda fixed, rank-repaired)")
     print(header)
     print("-" * len(header))
     for row in rows:

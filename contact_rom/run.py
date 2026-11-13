@@ -85,7 +85,7 @@ def run_e4(cfg: Config, problem: ContactProblem) -> None:
     if problem.name == "B3":
         sweep = run_sweep(cfg, cfg.e4_grids_b3, sweep_problem_b3)
         cross = crossovers(sweep)
-        print_sweep(sweep, cross, criterion4_verdict(cross))
+        print_sweep(sweep, cross, criterion4_verdict(cross), "B3")
         print("saved:", save_e4(cfg, "e4_sweep_b3", sweep))
         return
     snaps, mu_test, _ = prepare(cfg, problem)
@@ -138,7 +138,9 @@ def run_e5(cfg: Config, problem: ContactProblem) -> None:
 def run_summary(cfg: Config) -> None:
     """Step 7: acceptance criteria on B1 and B2 (recomputed) and criterion 4 from the saved E4 sweep."""
     results = {name: score_benchmark(cfg, BENCHMARKS[name](cfg), prepare) for name in ("b1", "b2")}
-    print_summary(results, criterion4(Path(cfg.out_dir) / "b2_e4" / "e4_sweep.npz"))
+    out = Path(cfg.out_dir)
+    print_summary(results, {"B2 membrane": criterion4(out / "b2_e4" / "e4_sweep.npz"),
+                            "B3 two-body": criterion4(out / "b3_e4" / "e4_sweep_b3.npz")})
 
 
 def main() -> None:

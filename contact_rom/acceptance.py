@@ -42,7 +42,7 @@ def criterion4(sweep_path: Path) -> dict:
     return {"cross": cross, "verdict": criterion4_verdict(cross)}
 
 
-def print_summary(results: dict, c4: dict) -> None:
+def print_summary(results: dict, c4_by_bench: dict) -> None:
     """Console summary table per benchmark and criterion."""
     print("\nAcceptance summary (Section 5.3)")
     for bench, res in results.items():
@@ -59,8 +59,10 @@ def print_summary(results: dict, c4: dict) -> None:
         for kind, rho in res["c3_min"].items():
             print(f"  C3 {kind:<4} Spearman min {rho:.3f}, median {res['c3_median'][kind]:.3f}  "
                   f"{'PASS' if rho > 0.90 else 'FAIL'}")
-    for regime, v in c4["cross"].items():
-        verdict = c4["verdict"][regime]
-        print(f"\n  C4 membrane sweep, {regime}: N* pred {v['N_pred']:.0f}, meas {v['N_meas']:.0f}, "
-              f"ratio {v['ratio']:.2f}  {'PASS' if verdict else 'FAIL' if verdict is not None else 'n/a'}")
-    print("  C4 B1, B3: no N sweep available (fixed size), not evaluated")
+    for bench, c4 in c4_by_bench.items():
+        for regime, v in c4["cross"].items():
+            verdict = c4["verdict"][regime]
+            tag = "PASS" if verdict else "FAIL" if verdict is not None else "n/a (no crossover in swept range)"
+            print(f"  C4 {bench}, {regime}: N* pred {v['N_pred']:.0f}, meas {v['N_meas']:.0f}, "
+                  f"ratio {v['ratio']:.2f}  {tag}")
+    print("  C4 B1: fixed size, no N sweep, not evaluated")
