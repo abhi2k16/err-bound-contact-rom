@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import platform
 import sys
 from dataclasses import asdict
@@ -26,6 +27,7 @@ def environment_info() -> dict:
         "scipy": scipy.__version__,
         "fea_engine": fea_engine.__version__,
         "rom_engine": rom_engine.__version__,
+        "threads": {v: os.environ.get(v, "unset") for v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")},
     }
 
 
