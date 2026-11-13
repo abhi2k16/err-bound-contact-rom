@@ -6,7 +6,12 @@
 \usepackage{mathptmx} % Times text and math
 \usepackage{booktabs}
 \usepackage{graphicx}
-\usepackage[section]{placeins} % keep floats inside their own section
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\algrenewcommand\algorithmicrequire{\textbf{Input:}}
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+\algrenewcommand\alglinenumber[1]{\footnotesize #1:}
+\usepackage{placeins} % \FloatBarrier before the conclusion keeps floats out of the references
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric}
 \graphicspath{{figures/}}
@@ -14,8 +19,15 @@
 \usepackage{hyperref}
 \usepackage{cite}
 
-\geometry{margin=1in}
+\geometry{margin=0.9in}
 \emergencystretch=3em
+% float placement: let floats share pages with text and fill pages
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}\renewcommand{\floatpagefraction}{0.7}
+\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}\setcounter{totalnumber}{5}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
 
 \usepackage{longtable}
 \usepackage{array}
@@ -58,14 +70,14 @@ In this paper, we address all three gaps by developing a unified reliability and
     \item \textbf{Break-Even Computational Cost Model:} We formulate an explicit FLOP- and iteration-aware cost model incorporating primal rank-repair enrichment, contact-row retention, active-set iteration counts, and dense-versus-sparse linear algebra scaling \cite{franceschini2022block}, identifying the regimes in which Lagrange-multiplier contact ROMs outperform full-order solvers; predicted and measured break-even sizes agree within a factor of two on the membrane family and on B3; for varying stiffness on B3 the break-even lies at very small sizes and is weakly determined, B1 could not be scored, and predicted speedup magnitudes overshoot measurements at large sizes.
 \end{itemize}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \input{figures/fig_workflow.tex}
 \caption{Overview of the proposed framework. Offline, snapshots yield the primal basis $V$ and a dual basis $U$, the primal space is enriched until the reduced Schur complement is well conditioned, and the threshold $\tau_{\mathrm{adm}}$ is calibrated on validation queries. Online, a reduced LCP solve is followed by lifting and by the interface-only indicator $\eta_{\mathrm{adm}}$; a query is accepted only if the indicator stays below the threshold, otherwise it falls back to the full-order solver. A small reduced KKT residual alone is not a certificate of admissibility of the lifted pair.}
 \label{fig:workflow}
 \end{figure}
 
-The remainder of the paper is organized as follows. Section~\ref{sec:formulation} states the full-order and reduced mixed contact formulations and illustrates silent reduced-KKT failure. Section~\ref{sec:estimator} derives the four-component \emph{a posteriori} error bound and its online admissibility indicator. Section~\ref{sec:basis_cost} reviews the five dual-basis constructions and formulates the break-even cost model. Section~\ref{sec:experiments} presents numerical experiments across 1D chain, 2D obstacle membrane, and 3D two-body contact benchmarks, and Section~\ref{sec:conclusion} summarizes practical guidelines for selecting and certifying contact ROMs.
+The remainder of the paper is organized as follows. Section~\ref{sec:formulation} states the full-order and reduced mixed contact formulations and illustrates silent reduced-KKT failure. Section~\ref{sec:estimator} derives the four-component \emph{a posteriori} error bound and its online admissibility indicator. Section~\ref{sec:basis_cost} reviews the five dual-basis constructions, formulates the break-even cost model and states the offline and online procedure. Section~\ref{sec:experiments} presents numerical experiments across 1D chain, 2D obstacle membrane, and 3D two-body contact benchmarks, and Section~\ref{sec:conclusion} summarizes practical guidelines for selecting and certifying contact ROMs.
 
 % ======================================================================
 \section{Problem Formulation and Silent Reduced-KKT Failure}
@@ -148,14 +160,14 @@ Even when \(\Vert R_{\text{red}}(u_r, \lambda_r) \Vert_\infty \le 10^{-12}\), th
 
 To make this failure concrete, consider the parametrized 2D obstacle membrane (\(N = 324\)) \cite{benaceur2020reduced} and 1D discrete spring-chain contact (\(N = 60\)) \cite{pawar2025efficient} benchmarks used in the experiments of Section~\ref{sec:experiments}. When reduced with identical primal and dual dimensions \((r_u, r_\lambda)\) using a standard signed SVD dual basis, the active-set LCP solver converges to reduced KKT residuals below \(10^{-14}\) on every test query. Upon lifting, however, the signed SVD model exhibits lifted multipliers as negative as \(\min_i \tilde{\lambda}_i = -1.6\) (B1) and \(-0.83\) (B2) and relative energy-norm errors of order one (median \(0.96\) and \(1.05\), maximum \(1.9\) and \(1.8\)), whereas a non-negative matrix factorization (NMF) dual basis \cite{balajewicz2016projection} of identical rank gives median errors of \(0.4\%\) (B1) and \(4\%\) (B2) (Figure~\ref{fig:silent}). Crucially, the reduced solver alone provides no warning that this breakdown has occurred, motivating the computable lifted admissibility estimator derived in Section~\ref{sec:estimator}. Figure~\ref{fig:silent} shows the effect on the test queries of the two benchmarks. Figure~\ref{fig:multiplier} shows the corresponding multipliers, and Figure~\ref{fig:b3rom} shows the same failure in three dimensions.
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{fig_silent_failure.pdf}
 \caption{Silent reduced-KKT failure on B1 and B2 (200 test queries per basis: five dual dimensions $\times$ 40 parameters; the dual dimensions are pooled). Every query has a reduced KKT residual below $10^{-12}$ (residuals of exactly zero are drawn at $10^{-17}$ with a small horizontal jitter). All 200 signed-SVD queries lie in the shaded silent-failure region on both benchmarks, with a median relative energy error of about $1$. NMF errors exceed $5\%$ on $3.5\%$ of the B1 queries and on $40\%$ of the B2 queries, so non-negativity of the dual basis reduces but does not remove the hazard.}
 \label{fig:silent}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{fig_multiplier.pdf}
 \caption{Contact tractions on the central $12\times12$ patch of B2 for one test query, $r_\lambda=8$ with rank repair. The full-order traction (left) is non-negative, and the NMF-lifted multiplier reproduces it. The SVD-lifted multiplier is adhesive (negative) inside the patch and has positive spikes at its edge; its minimum is $-0.22$ and its maximum $0.57$, against a full-order maximum of $0.23$. The color scale is symmetric about zero and shared by all panels.}
@@ -335,6 +347,67 @@ Let \(\Lambda_{\text{snap}} = [\lambda(\mu_1), \dots, \lambda(\mu_{n_s})] \in \m
   Following Fauque et al.~\cite{fauque2018hybrid} and Le Berre et al.~\cite{leberre2022condition} (see also empirical cubature surface reduction \cite{koller2021hyper, aresdeparga2023petrov}), the contact interface and bulk integration are restricted to a reduced domain \(\Omega_{\text{RID}}\) retaining \(n_{c,\text{RID}} \le n_c\) contact rows around high-activity regions, paired with localized primal interface enrichment \(V_{\text{RID}}\) (unit vectors on \(\Omega_{\text{RID}}\) nodes). Within \(\Omega_{\text{RID}}\), pointwise multipliers or localized positive modes enforce \(\eta_{\text{sign}} = 0\) on retained rows, while efficiency depends directly on keeping \(n_{c,\text{RID}} \ll n_c\) \cite{fauque2018hybrid, leberre2022condition}.
 \end{enumerate}
 
+Algorithms~\ref{alg:cpg}--\ref{alg:rid} state the CPG, gIS and RID constructions as implemented in our experiments (the signed SVD takes the leading left singular vectors of \(\Lambda_{\mathrm{snap}}\), and NMF uses the factorization routine of the reduction package), and Algorithm~\ref{alg:repair} states the supremizer rank repair that gives \(r_{\mathrm{rep}}\). The gIS choice by snapshot energy is the greedy choice that minimizes the neglected multiplier energy, because the columns of \(U\) are orthonormal.
+
+\begin{algorithm}[tbp]
+\caption{Cone-projected greedy dual basis (CPG).}\label{alg:cpg}
+\begin{algorithmic}[1]
+\Require snapshots $\Lambda_{\mathrm{snap}}=[\lambda_1,\dots,\lambda_{n_s}]\in\mathbb{R}^{n_c\times n_s}_{\ge 0}$, dimension $r_\lambda$
+\Ensure non-negative dual basis $U\in\mathbb{R}^{n_c\times r}_{\ge 0}$ with $r\le r_\lambda$
+\State $\mathcal{S}\gets\{\arg\max_s\|\lambda_s\|_2\}$
+\While{$|\mathcal{S}|<\min(r_\lambda,n_s)$}
+  \ForAll{$s\notin\mathcal{S}$}
+    \State $\rho_s\gets\min_{\alpha\ge 0}\|\lambda_s-\Lambda_{\mathcal{S}}\,\alpha\|_2$ \Comment{non-negative least squares}
+  \EndFor
+  \If{$\max_s\rho_s\le 10^{-12}$} \State \textbf{break} \EndIf
+  \State $\mathcal{S}\gets\mathcal{S}\cup\{\arg\max_{s\notin\mathcal{S}}\rho_s\}$ \Comment{worst-approximated snapshot}
+\EndWhile
+\State \Return $U\gets\Lambda_{\mathcal{S}}\,\mathrm{diag}\big(\|\lambda_s\|_2^{-1}\big)_{s\in\mathcal{S}}$ \Comment{normalized columns}
+\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}[tbp]
+\caption{Greedy index selection dual basis (gIS).}\label{alg:gis}
+\begin{algorithmic}[1]
+\Require snapshots $\Lambda_{\mathrm{snap}}\in\mathbb{R}^{n_c\times n_s}_{\ge 0}$, dimension $r_\lambda$
+\Ensure selection matrix $U=[e_{i_1},\dots,e_{i_{r_\lambda}}]\in\{0,1\}^{n_c\times r_\lambda}$
+\State $E_j\gets\sum_{s=1}^{n_s}\lambda_s[j]^2$ for $j=1,\dots,n_c$ \Comment{snapshot energy of each contact row}
+\State $\mathcal{I}\gets$ the $r_\lambda$ indices with the largest $E_j$, sorted increasingly
+\State \Return $U\gets I_{n_c}[:,\mathcal{I}]$
+\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}[tbp]
+\caption{Reduced integration domain dual basis (RID).}\label{alg:rid}
+\begin{algorithmic}[1]
+\Require snapshots $\Lambda_{\mathrm{snap}}$, primal POD basis $V$, constraint matrix $B$, element connectivity, dimension $r_\lambda$, number of element rings $m$
+\Ensure selection matrix $U=I_{n_c}[:,\mathcal{I}]$ on the retained contact rows $\mathcal{I}$
+\State $\Phi\gets$ leading $r_\lambda$ left singular vectors of $\Lambda_{\mathrm{snap}}$
+\State $\mathcal{D}_u\gets\mathrm{DEIM}\big(V_{:,1:r_\lambda}\big)$ \Comment{interpolation DOFs of the primal basis}
+\State $\mathcal{R}\gets\mathrm{DEIM}(\Phi)$ \Comment{interpolation rows of the multiplier modes}
+\State $\mathcal{D}_\lambda\gets$ DOFs coupled to the rows $\mathcal{R}$ through $B$
+\State $\mathcal{E}\gets$ elements containing a DOF of $\mathcal{D}_u\cup\mathcal{D}_\lambda$, grown by $m$ rings of neighbouring elements
+\State $\mathcal{I}\gets$ contact rows of $B$ whose DOFs all belong to the DOFs of $\mathcal{E}$
+\State \Return $U\gets I_{n_c}[:,\mathcal{I}]$ \Comment{the effective dimension $|\mathcal{I}|$ may differ from $r_\lambda$}
+\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}[tbp]
+\caption{Supremizer rank repair of the primal basis.}\label{alg:repair}
+\begin{algorithmic}[1]
+\Require orthonormal primal basis $V$, dual basis $U$, matrices $K$, $B$, condition limit $\kappa_{\max}$
+\Ensure enriched orthonormal basis $V$, number of added vectors $r_{\mathrm{rep}}$
+\State factorize $K$; $V_{\mathrm{start}}\gets V$
+\State $S\gets B_rK_r^{-1}B_r^T$ with $B_r=U^TBV$, $K_r=V^TKV$; eigenpairs $(\sigma_1\le\dots\le\sigma_{r_\lambda},\,w_1,\dots)$ of $S$
+\State $\kappa\gets\sigma_{r_\lambda}/\sigma_1$ ($\kappa\gets\infty$ if $\sigma_1\le 10^{-14}\sigma_{r_\lambda}$)
+\For{$k=1,\dots,r_\lambda$}
+  \If{$\kappa\le\kappa_{\max}$} \State \textbf{break} \EndIf
+  \State $z\gets K^{-1}B^TU\,w_1$ \Comment{supremizer along the weakest direction}
+  \State $z\gets z-VV^Tz$, applied twice \Comment{re-orthogonalization}
+  \If{$\|z\|_2<10^{-12}$} \State \textbf{break} \EndIf
+  \State $V\gets[V,\;z/\|z\|_2]$; recompute the eigenpairs of $S$ and $\kappa$
+\EndFor
+\State \Return $V$ and $r_{\mathrm{rep}}\gets$ (number of columns of $V$) $-$ (number of columns of $V_{\mathrm{start}}$)
+\end{algorithmic}
+\end{algorithm}
+
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.20}}
   >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.20}}
@@ -402,6 +475,58 @@ Defining the theoretical speedup ratio \(S := \mathcal{C}_{\text{FOM}} / \mathca
   Consequently, if the physical contact patch \(m_{\text{act}}\) is small (e.g., localized point or line contact with \(m_{\text{act}} \lesssim 30\)) and rank repair requires adding \(r_{\text{rep}} \sim 15\text{--}30\) unit vectors (in our experiments the supremizer repair added \(0\)--\(8\) vectors for SVD, NMF, CPG and gIS at \(r_\lambda \le 24\) on B1 and B2, and \(41\)--\(83\) for RID on B2), the cubic dense cost \(r_u^3\) immediately exceeds \(2 k_{\text{FOM}} m_{\text{act}}^3\), causing \(S < 1\). Thus, \textbf{Lagrange-multiplier contact ROMs are computationally advantageous in the constant-\(K\) regime only when the active contact zone \(m_{\text{act}}\) is large relative to the enriched reduced dimension \(r_u = r_{u,0} + r_{\text{rep}}\).}
 \end{enumerate}
 
+\hypertarget{offline-and-online-procedure}{%
+\subsection{Offline and Online Procedure}\label{offline-and-online-procedure}}
+
+Algorithms~\ref{alg:offline} and~\ref{alg:online} combine the preceding components. The offline stage (Algorithm~\ref{alg:offline}) builds the bases, repairs the primal space and calibrates the admissibility threshold on validation queries; it needs one full-order solve per training and per validation parameter. The online stage (Algorithm~\ref{alg:online}) solves the reduced problem, evaluates the interface indicators of Section~\ref{sec:estimator} and falls back to the full-order solver when the threshold is exceeded or undefined. When \(K\) depends on \(\mu\), step~1 re-projects the operators for each query, while the rank repair of Algorithm~\ref{alg:repair} is computed once, at the first training parameter. The calibration rule is the one scored in Section~\ref{sec:experiments}: the threshold is \(0.9\) times the smallest indicator value among the validation silent failures, so that the criterion of zero misses is an empirical statement about held-out queries and not a guarantee.
+
+\begin{algorithm}[tbp]
+\caption{Offline stage: reduced model and calibrated admissibility threshold.}\label{alg:offline}
+\begin{algorithmic}[1]
+\Require training and validation parameters $\mathcal{P}_{\mathrm{train}}$, $\mathcal{P}_{\mathrm{val}}$; basis type; $r_u$, $r_\lambda$; $\kappa_{\max}$; margin $\gamma=0.9$; tolerances $\varepsilon_{\mathrm{kkt}}=10^{-12}$, $\varepsilon_{\mathrm{silent}}=5\%$
+\Ensure primal basis $V$, dual basis $U$, constant $C_\lambda$, threshold $\tau_{\mathrm{adm}}$
+\For{$\mu_i\in\mathcal{P}_{\mathrm{train}}$}
+  \State solve the full-order contact problem~\eqref{eq:kkt} for $(u_i,\lambda_i)$
+\EndFor
+\State $V_0\gets$ leading $r_u$ left singular vectors of $U_{\mathrm{snap}}=[u_1,\dots,u_{n_s}]$
+\State $U\gets\textsc{DualBasis}(\text{type},\Lambda_{\mathrm{snap}},r_\lambda)$ \Comment{SVD, NMF, Algorithms~\ref{alg:cpg}--\ref{alg:rid}}
+\State $(V,r_{\mathrm{rep}})\gets\textsc{RankRepair}(V_0,U,K,B,\kappa_{\max})$ \Comment{Algorithm~\ref{alg:repair}}
+\State $C_\lambda\gets\max_i\|\lambda_i\|_2$; precompute the products that do not depend on the query
+\State $\mathcal{S}\gets\emptyset$
+\For{$\mu\in\mathcal{P}_{\mathrm{val}}$}
+  \State solve the full-order problem for $(u,\lambda)$; run steps 1--5 of Algorithm~\ref{alg:online} to obtain $\tilde u$, $\eta_{\mathrm{adm}}$ and $\|R_{\mathrm{red}}\|_\infty$
+  \If{$\|R_{\mathrm{red}}\|_\infty\le\varepsilon_{\mathrm{kkt}}$ \textbf{and} $\|u-\tilde u\|_K/\|u\|_K>\varepsilon_{\mathrm{silent}}$} \Comment{silent failure}
+    \State $\mathcal{S}\gets\mathcal{S}\cup\{\eta_{\mathrm{adm}}\}$
+  \EndIf
+\EndFor
+\If{$\mathcal{S}=\emptyset$}
+  \State $\tau_{\mathrm{adm}}\gets$ undefined \Comment{no threshold can be calibrated: every query is sent to the full-order solver}
+\Else
+  \State $\tau_{\mathrm{adm}}\gets\gamma\,\min\mathcal{S}$
+\EndIf
+\State \Return $V$, $U$, $C_\lambda$, $\tau_{\mathrm{adm}}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[tbp]
+\caption{Online query with the admissibility circuit breaker.}\label{alg:online}
+\begin{algorithmic}[1]
+\Require parameter $\mu$; $V$, $U$, $\tau_{\mathrm{adm}}$ from Algorithm~\ref{alg:offline}
+\Ensure displacement and multiplier, and a flag stating whether the full-order solver was used
+\State assemble $f(\mu)$ and $c(\mu)$; project $K_r$, $B_r$, $f_r$, $c_r$ by~\eqref{eq:red-ops} \Comment{precomputed if the operators do not depend on $\mu$}
+\State solve the reduced LCP~\eqref{eq:red-lcp} by the active-set method for $\lambda_r$; $u_r\gets K_r^{-1}(f_r-B_r^T\lambda_r)$
+\State lift $\tilde u\gets Vu_r$, $\tilde\lambda\gets U\lambda_r$
+\State $\eta_{\mathrm{sign}}\gets\|\min(\tilde\lambda,0)\|_2$; $g\gets B\tilde u-c$; $\eta_{\mathrm{gap}}\gets\|\max(g,0)\|_2$; $\eta_{\mathrm{comp}}\gets|\tilde\lambda_+^Tg|$
+\State $\eta_{\mathrm{adm}}\gets\eta_{\mathrm{sign}}+\eta_{\mathrm{gap}}+\sqrt{\eta_{\mathrm{comp}}}$ \Comment{Eq.~\eqref{eq:eta-adm}}
+\If{$\tau_{\mathrm{adm}}$ is defined \textbf{and} $\eta_{\mathrm{adm}}\le\tau_{\mathrm{adm}}$}
+  \State \Return $(\tilde u,\tilde\lambda)$, flag \textsc{reduced}
+\Else
+  \State solve the full-order contact problem~\eqref{eq:kkt} for $(u,\lambda)$
+  \State \Return $(u,\lambda)$, flag \textsc{full-order}
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
 % ======================================================================
 \section{Numerical Experiments Protocol}
 \label{sec:experiments}
@@ -427,7 +552,7 @@ We consider three progressively larger frictionless unilateral contact problems 
   A quarter model of two stacked linear-elastic blocks, discretized with trilinear hexahedral elements on a uniform \(20 \times 20\) grid with six element layers per block, with a matched node-to-node frictionless contact interface \cite{franceschini2022block, koller2021hyper, fauque2018hybrid} and a curved initial gap \(\delta_0 + \kappa r^2\). A Gaussian pressure acts on the upper face, symmetry planes remove the other quadrants, the lower base is clamped, and a weak ground spring on the upper face keeps \(K\) positive definite before contact. The element stiffness is taken from the Hex8 element of the \texttt{fea\_engine} package and the matrices are assembled in SciPy; the full-order solve is a sparse LU factorization with an active-set LCP, cross-checked against the sparse primal--dual contact solver of the same package. Parameters \(\mu = (E_1/E_2, P_{\text{load}}, \delta_0)\) vary the stiffness contrast (testing parameter-varying \(K(\mu)\) \cite{koller2021hyper}), applied pressure, and initial clearance.
 \end{enumerate}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{fig_geometry.pdf}
 \caption{Benchmark problems, drawn from the problem definitions used in the experiments with the PyVista tools of the FEA package. B1: 60-node spring chain above a parabolic rigid obstacle; every second node can touch it (circles: active contact nodes for one query). B2: clamped membrane on an $18\times18$ interior grid, pushed by a Gaussian load against a curved rigid obstacle over a central $12\times12$ contact patch (membrane colored by deflection, active contact nodes in orange). B3: quarter model of two stacked linear-elastic hexahedral blocks with a matched node-to-node interface, a Gaussian pressure on the top face, a clamped base and symmetry planes; the mesh shown ($8\times8$ elements, $3+3$ layers) is smaller than the meshes of the experiments.}
@@ -534,7 +659,7 @@ Criterion & B1 & B2 \\
 \bottomrule
 \end{longtable}
 
-\begin{table}[t]
+\begin{table}[tbp]
 \centering
 \footnotesize
 \caption{Head-to-head comparison of the five dual bases (experiment E3) at nominal dual dimension $r_\lambda=16$ with rank repair, median over 40 test queries, seed 42. $r_\lambda^{\mathrm{eff}}$: dual dimension actually used (RID retains extra contact rows); $r_{\mathrm{rep}}$: primal vectors added by rank repair; $\varepsilon_E$, $\varepsilon_\lambda$: median relative energy-norm and multiplier errors; $\min\tilde\lambda$: smallest lifted multiplier over the test queries; $k_{\mathrm{ROM}}$: median active-set iterations; $t_{\mathrm{on}}$: median online time per query; $t_{\mathrm{off}}$: offline construction time.}
@@ -558,7 +683,7 @@ B2 & SVD & 16 & 0 & 1.0 & 1.8 & $-0.49$ & 3 & 0.31 & 0.002 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[tbp]
 \centering
 \small
 \caption{Seed robustness of criteria 1 and 3 (seeds 42--46; entries are B1 / B2). Criterion 3: number of seeds, out of five, in which the minimum Spearman correlation over dual dimensions exceeds $0.9$, for the bound with the exact multiplier norm and for the online variant with the offline constant $C_\lambda$. Criterion 1: number of seeds in which no silent failure is missed (counted among seeds with at least one silent failure), for Eq.~\eqref{eq:eta-adm} and for the consistent indicator $\eta_{\mathrm{adm,v2}}$, with 40 and with 200 validation queries. RID had silent failures on B2 in only three of the five seeds, and many NMF, CPG and RID entries could not be calibrated (see text).}
@@ -592,41 +717,42 @@ RID & 0 / 3 & 0 / 4 & 0 / 2 & 3 / 2 & 3 / 3 & 5 / 3 \\
   \textbf{E5 (B3, default configuration, in-range vs.\ extrapolated load, Figure~\ref{fig:breaker}).} With \(\tau_{\text{adm}}\) calibrated on validation queries, the circuit breaker accepted no unsafe answer for NMF and CPG at \(r_\lambda \in \{8,16\}\) (0 misses). On in-range queries about 4\% fall back to the full-order solve and the speedup is about 16--18\(\times\). On extrapolated loads 96--100\% fall back and the speedup is about 1\(\times\): the breaker keeps answers safe but removes the acceleration. Only 4\% of in-range queries were unsafe without the breaker, so the in-range zero-miss result rests on very few positives.
 \end{itemize}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{fig_bound.pdf}
 \caption{Bound $\eta_{\mathrm{bound}}$ from Eq.~\eqref{eq:bound1}, evaluated with the exact multiplier norm, against the true energy-norm error for the five dual bases (columns; dual dimensions pooled) on B1 and B2 (rows), with a common range per row. Points on the diagonal would have effectivity one, and the shaded band marks $\theta_{\mathrm{eff}}\in[1,10]$. No point lies below the diagonal, consistent with Theorem~\ref{thm:bound}. The bound is tight for signed SVD and, on B2, for gIS, and loose and weakly ordered for NMF and CPG, which is why the rank correlation of criterion~3 is met reliably only for SVD.}
 \label{fig:bound}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{fig_components.pdf}
 \caption{Median value of each estimator component on B2, pooled over test queries and dual dimensions. Hollow markers at the left edge denote values of zero, shown at the axis floor. The non-negative bases (NMF, CPG, gIS, RID) have $\eta_{\mathrm{sign}}=0$ and, in the median, $\eta_{\mathrm{comp}}=0$, whereas signed SVD violates both. The median $\eta_{\mathrm{gap}}$ of RID is zero as well.}
 \label{fig:components}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
-\includegraphics[width=\textwidth]{fig_b3_rom.pdf}
+\includegraphics[width=0.86\textwidth]{fig_b3_rom.pdf}
 \caption{Full-order, reduced and error displacement magnitude on B3 (illustrative $8\times8$, $3+3$ mesh; fields rendered with the PyVista tools of the FEA package on the undeformed mesh, because the initial gap is part of the constraint data and not of the mesh; the first two columns of both rows share one color range). One query was selected from 30 random draws as one on which the SVD model fails (error above $20\%$) while the NMF model stays accurate, to illustrate the mechanism; it does not represent failure rates, which are reported in Figures~\ref{fig:silent} and~\ref{fig:bound}. Top: NMF dual basis, relative energy error $0.15\%$. Bottom: SVD dual basis, relative energy error $70\%$ and a minimum lifted multiplier of $-0.046$. The error panels have their own color bars.}
 \label{fig:b3rom}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{fig_breakeven.pdf}
 \caption{Predicted (dashed, Eqs.~\eqref{eq:cfom}--\eqref{eq:crom}) and measured (solid) speedup over the full-order solver against problem size, for constant stiffness and for parameter-varying stiffness, on the membrane (B2) and the two-body hex8 problem (B3). Break-even is the size from which a curve stays above $S=1$. The predicted and measured break-even sizes agree within a factor of two in the constant-stiffness regime on both benchmarks (ratios $0.78$ and $0.77$) and for varying stiffness on B2 ($1.72$) and B3 ($0.64$); the last lies below $N=100$ and is weakly determined, because the measured speedups there are close to one and not monotone. The predicted curves are steeper than the measured ones, so the model overestimates absolute speedups at large $N$.}
 \label{fig:breakeven}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[tbp]
 \centering
 \includegraphics[width=\textwidth]{fig_breaker.pdf}
 \caption{Circuit breaker on B3 (NMF and CPG duals, $r_\lambda\in\{8,16\}$, $\tau_{\mathrm{adm}}$ calibrated on validation queries; 25 queries per set). Left: share of queries sent to the full-order solver. Right: speedup over the full-order solve, including the cost of the fallback. In-range queries are almost all accepted at a speedup of about $16$--$18\times$; extrapolated queries are almost all rejected, which keeps the answers safe but removes the acceleration. The in-range set contains few unsafe queries ($4\%$), so its zero-miss outcome rests on few positives.}
 \label{fig:breaker}
 \end{figure}
 
+\FloatBarrier
 % ======================================================================
 \section{Conclusion and Practical Guidelines}
 \label{sec:conclusion}
@@ -675,7 +801,8 @@ Based on the theoretical bounds in Section 3 and the cost scaling in Section 4, 
 The experiments have a limited scope. The main tables use a single random seed (42) with 40 test and 40 validation queries per benchmark, and the five-seed check of Table~\ref{tab:robust} shows that the criterion 1 outcome depends on the seed; rates such as false alarms or misses carry sampling uncertainty that we did not quantify with confidence intervals. The threshold calibration needs validation queries that contain silent failures, and several non-negative basis entries had none. Contact-patch translation on the membrane, an in-sample validation set and the time-dependent extension (E6) were not run; the break-even model is validated on the membrane and on the three-dimensional problem, but not on B1, the B3 varying-stiffness crossover is weakly determined at very small sizes, repeated timing runs differ by a factor of about 1.4 in the measured break-even, and the model overestimates absolute speedups at large sizes. Three-dimensional results come from one mesh family of a single two-body geometry. The effectivity and correlation results use the bound with the exact multiplier norm of the full-order solution, which is a validation quantity; the online-usable version with the offline constant \(C_\lambda\) is rigorous only while the query multiplier norm stays below \(C_\lambda\), it fell below the true error on up to \(0.5\%\) of in-range test queries for gIS and RID on B1, and we did not test it on extrapolated queries. Two extensions remain open for future investigation. First, while our experiments focus primarily on frictionless unilateral contact, extending the constant-sign multiplier decomposition to Coulomb frictional contact \cite{niakh2024reduced} requires coupling normal traction admissibility with tangential friction-cone projection residuals. Second, integrating the online circuit breaker \(\eta_{\text{adm}}\) into an automated, on-the-fly basis enrichment loop for large-scale 3D nonlinear elastoplastic and substructured dynamic contact \cite{koller2021hyper, aresdeparga2023petrov, manvelyan2026inference} represents a natural next step toward certified industrial contact digital twins.
 
 
+{\small
 \bibliographystyle{elsarticle-num}
-\bibliography{references}
+\bibliography{references} }
 
 \end{document}
