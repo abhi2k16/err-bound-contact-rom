@@ -23,15 +23,16 @@ def assert_theorem1(audit: dict, rel_slack: float = 1e-8) -> None:
             assert entry["eta_sign"].max() <= 1e-12, "NMF basis must give eta_sign = 0"
 
 
-def effectivity_stats(entry: dict, cfg: Config) -> dict:
+def effectivity_stats(entry: dict, cfg: Config, bound_key: str = "bound1") -> dict:
     """Effectivity diagnostics for one (basis, r_lambda) entry.
 
     Acceptance criterion 2 is scoped to queries whose relative energy error
     exceeds ``cfg.err_silent`` (the errors the estimator must catch):
     ``in_scope`` is the share of those with theta in [1, 10], ``n_scope`` their count.
-    ``in_all`` is the same share over all queries (diagnostic only).
+    ``in_all`` is the same share over all queries (diagnostic only). ``bound_key`` selects the bound: ``"bound1"``
+    (exact ``||lambda||_2``, a validation quantity) or ``"bound_Clam"`` (offline constant ``C_lambda``, usable online).
     """
-    theta = entry["bound1"] / np.maximum(entry["err_abs"], 1e-300)
+    theta = entry[bound_key] / np.maximum(entry["err_abs"], 1e-300)
     in_range = (theta >= 1) & (theta <= 10)
     scope = entry["err_energy"] > cfg.err_silent
     return {
@@ -39,7 +40,8 @@ def effectivity_stats(entry: dict, cfg: Config) -> dict:
         "in_all": float(in_range.mean()),
         "in_scope": float(in_range[scope].mean()) if scope.any() else float("nan"),
         "n_scope": int(scope.sum()),
-        "spearman": float(spearmanr(entry["bound1"], entry["err_abs"])[0]),
+        "spearman": float(spearmanr(entry[bound_key], entry["err_abs"])[0]),
+        "valid": float(np.mean(entry[bound_key] >= entry["err_abs"] * (1.0 - 1e-8))),
         "clam_ok": float(np.mean(entry["bound_Clam"] >= entry["err_abs"])),
     }
 
@@ -63,11 +65,11 @@ def criterion1_verdict(audit: dict, cfg: Config, tau_adm: float, key: str) -> di
     return out
 
 
-def criterion2_verdict(audit: dict, cfg: Config) -> dict:
+def criterion2_verdict(audit: dict, cfg: Config, bound_key: str = "bound1") -> dict:
     """Pooled scoped effectivity per basis kind: share of in-scope queries with theta in [1, 10]."""
     out = {}
     for kind in ("svd", "nmf"):
-        theta = np.concatenate([e["bound1"] / np.maximum(e["err_abs"], 1e-300)
+        theta = np.concatenate([e[bound_key] / np.maximum(e["err_abs"], 1e-300)
                                 for (k, _), e in audit.items() if k == kind])
         scope = np.concatenate([e["err_energy"] > cfg.err_silent for (k, _), e in audit.items() if k == kind])
         share = float(((theta >= 1) & (theta <= 10))[scope].mean()) if scope.any() else float("nan")

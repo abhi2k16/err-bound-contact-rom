@@ -51,7 +51,8 @@ def fig_silent_failure() -> None:
     rng = np.random.default_rng(0)
     fig, axes = plt.subplots(1, 2, figsize=(6.3, 2.7), sharey=True)
     for ax, (title, path) in zip(axes, (("B1 spring chain", RES / "b1_e1" / "e1_b1.npz"),
-                                        ("B2 membrane", RES / "b2_all" / "e1_b2.npz"))):
+                                        ("B2 membrane", next((p for p in (RES / "b2_all" / "e1_b2.npz", RES / "b2_e1" / "e1_b2.npz")
+                                                              if p.exists()), RES / "b2_e1" / "e1_b2.npz")))):
         ax.fill_between([1e-17, TOL_KKT], TOL_ERR, 10, color=ORANGE, alpha=0.08, linewidths=0)
         for kind, color, marker in (("svd", BLUE, "o"), ("nmf", ORANGE, "^")):
             res = np.maximum(pooled(path, kind, "res_red"), 1e-17) * 10 ** rng.uniform(-0.15, 0.15, 200)

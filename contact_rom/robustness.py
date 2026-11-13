@@ -55,3 +55,10 @@ def summarize(results: dict) -> None:
                 c2txt = f", criterion 2 share {np.nanmin(c2):.2f}-{np.nanmax(c2):.2f}" if c2 else ""
                 print(f"  criterion 3 {kind:<4} Spearman min over entries: {np.min(mins):.2f} to {np.max(mins):.2f} "
                       f"(pass in {sum(m > 0.9 for m in mins)}/{len(seeds)} seeds), median {np.median(meds):.2f}{c2txt}")
+                minc = [per_seed[s]["c3_min_Clam"][kind] for s in seeds if "c3_min_Clam" in per_seed[s]]
+                if minc:
+                    valid = [per_seed[s]["valid_Clam"][kind] for s in seeds]
+                    c2c = [per_seed[s]["c2_Clam"][kind]["share"] for s in seeds if kind in per_seed[s]["c2_Clam"]]
+                    c2ctxt = f", criterion 2 share {np.nanmin(c2c):.2f}-{np.nanmax(c2c):.2f}" if c2c else ""
+                    print(f"      with C_lambda bound: min {np.min(minc):.2f} to {np.max(minc):.2f} "
+                          f"(pass in {sum(m > 0.9 for m in minc)}/{len(seeds)} seeds), valid on {np.min(valid):.1%} of queries{c2ctxt}")

@@ -36,7 +36,7 @@ Rule: wherever the suite provides a function, call it rather than reimplement it
 | B2 membrane (18×18, N=324, n_c=144) | Build from suite mesh/assembly; matches the suite's membrane obstacle gallery problem. |
 | B3 3D two-body | Hex8 element stiffness from the suite (`Hex8Solid3D`), structured grid assembled in scipy (all cells identical); FOM through own factored solve, verified against `solve_contact_static_sparse`. N ≈ 2·10⁴ default (configurable to 10⁵). Parametrized K(μ) via stiffness contrast. This replaces the earlier plain-scipy substitute. |
 | E1–E5 | Core experiments, run by default. |
-| E6 (BDF2 dynamics) | Optional, off by default (`CONFIG.run_e6 = False`). |
+| E6 (BDF2 dynamics) | Optional; not implemented in this study. |
 
 ## 4. Package layout (`contact_rom/`, run with `python -m contact_rom`)
 
