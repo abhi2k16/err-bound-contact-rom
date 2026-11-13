@@ -13,12 +13,12 @@ from .benchmarks import ContactProblem, build_b1, build_b2
 from .calibration import calibrate_all
 from .config import Config
 from .dual_bases import DUAL_KINDS
-from .e4 import criterion4_verdict, crossovers, run_e4_entries, run_sweep
+from .break_even_experiment import criterion4_verdict, crossovers, run_e4_entries, run_sweep
 from .environment import environment_info, save_run_metadata
 from .estimator import tau_adm_from_snapshots
 from .fom import cross_check_methods, verify_fom_on_samples
 from .metrics import assert_theorem1, criterion1_verdict, criterion2_verdict
-from .report_e4 import print_e4_entries, print_regime_summary, print_sweep, save_e4
+from .report_break_even import print_e4_entries, print_regime_summary, print_sweep, save_e4
 from .report import (print_audit_table, print_calibrated_summary, print_calibrated_table, print_comparison_table,
                      print_estimator_table, print_step1_summary, save_audit)
 
