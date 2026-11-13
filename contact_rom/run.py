@@ -44,8 +44,8 @@ def prepare(cfg: Config, problem: ContactProblem) -> tuple:
 
 
 def print_criterion1(audit: dict, cfg: Config, tau_adm: float) -> None:
-    """Criterion 1 (missed / silent failures, pooled over r_lambda) for Eq. (3) and eta_adm_v2."""
-    print("criterion 1 missed/silent, Eq.(3) :", criterion1_verdict(audit, cfg, tau_adm, "eta_adm"))
+    """Criterion 1 (missed / silent failures, pooled over r_lambda) for Eq. (15) and eta_adm_v2."""
+    print("criterion 1 missed/silent, Eq.(15) :", criterion1_verdict(audit, cfg, tau_adm, "eta_adm"))
     print("criterion 1 missed/silent, v2     :", criterion1_verdict(audit, cfg, tau_adm, "eta_adm_v2"))
 
 

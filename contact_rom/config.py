@@ -64,9 +64,9 @@ class Config:
     err_silent: float = 0.05            # relative energy error counted as failure
     n_val: int = 40                     # held-out validation queries for tau_adm calibration
     tau_margin: float = 0.9             # tau = margin * min indicator over validation silent failures
-    c_fact: float = 1.0                 # Eq. (4) factorisation constant
-    c_solve: float = 1.0                # Eq. (4) triangular-solve constant
-    c_proj: float = 2.0                 # Eq. (5) projection constant (2 FLOPs per multiply-add)
+    c_fact: float = 1.0                 # Eq. (16) factorisation constant
+    c_solve: float = 1.0                # Eq. (16) triangular-solve constant
+    c_proj: float = 2.0                 # Eq. (17) projection constant (2 FLOPs per multiply-add)
     e4_repeats: int = 5                 # best-of repeats for wall-clock timings
     e4_grids: tuple = (5, 6, 8, 12, 16, 20, 24, 32, 40, 48)   # membrane n_grid values for the N sweep
     e4_n_train: int = 40                # snapshots per sweep size

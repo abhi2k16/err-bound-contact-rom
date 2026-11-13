@@ -21,7 +21,7 @@ def dual_energy_norm(K_lu: spla.SuperLU, r_vec: np.ndarray) -> float:
 def estimator_terms(K_mat, B_mat, f_vec, c_vec, u_lift, lam_lift, K_lu, B_norm) -> dict:
     """Computable indicators of the lifted pair ``(u~, lam~)`` (paper convention).
 
-    Returns eta_eq, eta_sign, eta_gap, eta_comp, eta_adm (Eq. 3) and the
+    Returns eta_eq, eta_sign, eta_gap, eta_comp, eta_adm (Eq. 15) and the
     residual ``r_eq_tilde`` with the unprojected multiplier.
     """
     lam_pos, lam_neg = np.maximum(lam_lift, 0.0), np.minimum(lam_lift, 0.0)
@@ -64,7 +64,7 @@ def eta_adm_v2(terms: dict, C_lambda: float) -> float:
     interface part of bound (2) without the equilibrium residual, with the exact
     ``||lambda||_2`` replaced by the offline constant ``C_lambda`` and the trace
     constant ``||B||_{K->2}`` precomputed offline. Online cost stays
-    ``O(n_c (r_u + r_lambda))``. Unlike Eq. (3) it is on the same scale as the
+    ``O(n_c (r_u + r_lambda))``. Unlike Eq. (15) it is on the same scale as the
     energy-norm error, so it can share ``tau_adm``. Not an upper bound (no eta_eq).
     """
     value = (2.0 * terms["B_norm"] ** 2 * terms["eta_sign"] ** 2

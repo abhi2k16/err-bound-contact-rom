@@ -85,7 +85,7 @@ def print_comparison_table(audit: dict, cfg: Config, tau_adm: float) -> None:
 
 
 def print_calibrated_table(calibrated: dict, cfg: Config) -> None:
-    """Per (basis, r_lambda): validation-calibrated tau and test-set misses / false alarms, Eq. (3) vs v2."""
+    """Per (basis, r_lambda): validation-calibrated tau and test-set misses / false alarms, Eq. (15) vs v2."""
     header = (f"{'basis':<5}{'r_lam':>6}{'silent':>8}{'good':>6}{'tau Eq3':>10}{'miss':>6}{'FA':>7}"
               f"{'tau v2':>10}{'miss':>6}{'FA':>7}")
     print(f"Calibrated tau_adm (fit on {cfg.n_val} validation queries, scored on test; margin {cfg.tau_margin})")

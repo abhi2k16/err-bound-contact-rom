@@ -1,4 +1,4 @@
-"""FLOP- and iteration-aware break-even cost model (manuscript Section 4.2, Eqs. 4-5)."""
+"""FLOP- and iteration-aware break-even cost model (manuscript Section 4.2, Eqs. 16-17)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import scipy.sparse as sp
 
 @dataclass(frozen=True)
 class ProblemSizes:
-    """Full-order quantities entering Eq. (4) and the projection term of Eq. (5)."""
+    """Full-order quantities entering Eq. (16) and the projection term of Eq. (17)."""
 
     n_dof: int          # N
     n_contact: int      # n_c
@@ -21,7 +21,7 @@ class ProblemSizes:
 
 @dataclass(frozen=True)
 class ReducedSizes:
-    """Reduced quantities entering Eq. (5)."""
+    """Reduced quantities entering Eq. (17)."""
 
     r_u: int            # enriched primal dimension r_{u,0} + r_rep
     r_lambda: int       # dual dimension actually used
@@ -43,7 +43,7 @@ def problem_sizes(K_mat: sp.spmatrix, B_mat: sp.spmatrix) -> ProblemSizes:
 
 def flops_fom(sizes: ProblemSizes, k_fom: float, m_act: float, c_fact: float, c_solve: float,
               k_varies: bool) -> float:
-    """Eq. (4). With constant K the factorisation and compliance assembly are offline (affine form)."""
+    """Eq. (16). With constant K the factorisation and compliance assembly are offline (affine form)."""
     lcp = k_fom * ((2.0 / 3.0) * m_act**3 + 2.0 * sizes.n_contact * m_act)
     if not k_varies:
         return float(lcp)
@@ -61,7 +61,7 @@ def flops_projection(sizes: ProblemSizes, red: ReducedSizes, c_proj: float, k_va
 
 
 def flops_rom(sizes: ProblemSizes, red: ReducedSizes, c_proj: float, k_varies: bool) -> float:
-    """Eq. (5): projection + dense solves + reduced active-set + online eta_adm check."""
+    """Eq. (17): projection + dense solves + reduced active-set + online eta_adm check."""
     r_u, r_l = red.r_u, red.r_lambda
     dense = r_u**3 / 3.0 + 2.0 * r_l * r_u**2 + 2.0 * r_l**2 * r_u
     lcp = red.k_rom * ((2.0 / 3.0) * red.m_r_act**3 + 2.0 * r_l * red.m_r_act)

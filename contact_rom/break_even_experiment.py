@@ -18,7 +18,7 @@ REGIMES = {"aff": False, "var": True}   # name -> K parameter-varying?
 
 
 def predicted_speedups(cfg: Config, sizes: ProblemSizes, red: ReducedSizes, k_fom: float, m_act: float) -> dict:
-    """Eq. (4)/(5) speedups for the constant-K ("aff") and K-varying ("var") regimes."""
+    """Eq. (16)/(17) speedups for the constant-K ("aff") and K-varying ("var") regimes."""
     return {name: speedup_pred(sizes, red, k_fom, m_act, cfg.c_fact, cfg.c_solve, cfg.c_proj, varies)
             for name, varies in REGIMES.items()}
 
