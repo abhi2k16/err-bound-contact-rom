@@ -4,13 +4,18 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import replace
 
 import numpy as np
 
 from .audit import run_basis_audit_sets, run_silent_failure_audit
 from .bases import Snapshots, build_snapshots
+from .benchmark_3d import build_b3
 from .benchmarks import ContactProblem, build_b1, build_b2
 from .calibration import calibrate_all
+from .circuit_breaker import breaker_table
+from .query_context import cross_check_sparse_solver
+from .timing import time_fom_queries
 from .config import Config
 from .dual_bases import DUAL_KINDS
 from .break_even_experiment import criterion4_verdict, crossovers, run_e4_entries, run_sweep
@@ -18,11 +23,13 @@ from .environment import environment_info, save_run_metadata
 from .estimator import tau_adm_from_snapshots
 from .fom import cross_check_methods, verify_fom_on_samples
 from .metrics import assert_theorem1, criterion1_verdict, criterion2_verdict
+from .report_breaker import print_breaker_summary, print_breaker_table, save_breaker
 from .report_break_even import print_e4_entries, print_regime_summary, print_sweep, save_e4
 from .report import (print_audit_table, print_calibrated_summary, print_calibrated_table, print_comparison_table,
                      print_estimator_table, print_step1_summary, save_audit)
 
-BENCHMARKS = {"b1": lambda cfg: build_b1(cfg.b1), "b2": lambda cfg: build_b2(cfg.b2)}
+BENCHMARKS = {"b1": lambda cfg: build_b1(cfg.b1), "b2": lambda cfg: build_b2(cfg.b2),
+              "b3": lambda cfg: build_b3(cfg.b3)}
 
 
 def prepare(cfg: Config, problem: ContactProblem) -> tuple:
@@ -85,13 +92,49 @@ def run_e4(cfg: Config, problem: ContactProblem) -> None:
         print("saved:", save_e4(cfg, "e4_sweep", sweep))
 
 
+def override_b3(cfg: Config, n_xy: int | None, nz: int | None) -> Config:
+    """Return ``cfg`` with B3 mesh sizes overridden (development runs on smaller meshes)."""
+    b3 = cfg.b3
+    b3 = replace(b3, n_xy=n_xy or b3.n_xy, nz_up=nz or b3.nz_up, nz_low=nz or b3.nz_low)
+    return replace(cfg, b3=b3)
+
+
+def e5_sets(cfg: Config, problem: ContactProblem) -> tuple:
+    """Training snapshots and the query sets ``val``, ``test`` (in range) and ``extrap`` (out of range)."""
+    rng = np.random.default_rng(cfg.seed + 1)
+    snaps = build_snapshots(problem, problem.sample_mu(rng, cfg.e5_n_train), cfg.lcp_method)
+    mu_sets = {"test": problem.sample_mu(rng, cfg.e5_n_test), "val": problem.sample_mu(rng, cfg.e5_n_val),
+               "extrap": problem.sample_mu_extrap(rng, cfg.e5_n_extrap)}
+    return snaps, mu_sets
+
+
+def run_e5(cfg: Config, problem: ContactProblem) -> None:
+    """E5: circuit breaker on a parametrized-K problem (B3) with in-range and extrapolation queries."""
+    if problem.sample_mu_extrap is None:
+        raise SystemExit("E5 needs a benchmark with an extrapolation sampler (use --bench b3)")
+    snaps, mu_sets = e5_sets(cfg, problem)
+    print(f"FOM cross-check vs fea_engine sparse solver: max |du| = {cross_check_sparse_solver(problem, mu_sets['test'][0]):.2e}")
+    audits = run_basis_audit_sets(problem, cfg, snaps, mu_sets, cfg.e5_kinds, cfg.e5_r_dual_list, repair=True)
+    calibrated = calibrate_all(audits["val"], audits["test"], cfg)
+    fom_times = {name: float(np.median(time_fom_queries(problem, mu_sets[name][:cfg.e5_timing_queries],
+                                                         cfg.e5_repeats).t_full)) for name in ("test", "extrap")}
+    table = breaker_table(audits, calibrated, fom_times, cfg)
+    tau_info = {key: {ind: sc["tau"] for ind, sc in per.items()} for key, per in calibrated.items()}
+    print(f"FOM time per query (K varying): test {fom_times['test']:.2f} s, extrapolation {fom_times['extrap']:.2f} s")
+    print_breaker_table(table, tau_info, cfg)
+    print_breaker_summary(table)
+    print("saved:", save_breaker(cfg, table))
+
+
 def main() -> None:
-    """CLI: ``python -m contact_rom [e1|e3|e4|all] [--bench b1|b2]``."""
+    """CLI: ``python -m contact_rom [e1|e3|e4|e5|all] [--bench b1|b2]``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "all"])
+    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "all"])
     parser.add_argument("--bench", default="b1", choices=sorted(BENCHMARKS))
+    parser.add_argument("--b3-n-xy", type=int, default=None, help="override B3 elements per side")
+    parser.add_argument("--b3-nz", type=int, default=None, help="override B3 element layers per body")
     args = parser.parse_args()
-    cfg = Config(run_id=f"{args.bench}_{args.experiment}")
+    cfg = override_b3(Config(run_id=f"{args.bench}_{args.experiment}"), args.b3_n_xy, args.b3_nz)
     print("metadata:", save_run_metadata(cfg))
     print("Environment:", json.dumps(environment_info()))
     problem = BENCHMARKS[args.bench](cfg)
@@ -99,8 +142,10 @@ def main() -> None:
         run_e1(cfg, problem)
     if args.experiment in ("e3", "all"):
         run_e3(cfg, problem)
-    if args.experiment in ("e4", "all"):
+    if args.experiment in ("e4", "all") and problem.name != "B3":
         run_e4(cfg, problem)
+    if args.experiment == "e5":
+        run_e5(cfg, problem)
 
 
 if __name__ == "__main__":

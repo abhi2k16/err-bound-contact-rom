@@ -33,6 +33,8 @@ class ContactProblem:
     c_vec: Callable[[np.ndarray], np.ndarray]
     sample_mu: Callable[[np.random.Generator, int], np.ndarray]
     elem_dofs: np.ndarray | None = None   # (n_elem, dofs_per_elem) connectivity (used by RID)
+    k_varies: bool = False                # True if K depends on mu (reduced operators rebuilt per query)
+    sample_mu_extrap: Callable[[np.random.Generator, int], np.ndarray] | None = None  # out-of-range sampler
 
 
 def chain_stiffness(n_dof: int, k_spring: float, k_ground: float) -> sp.csr_matrix:

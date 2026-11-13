@@ -17,8 +17,8 @@ from .bases import Snapshots, pod_primal_basis
 from .benchmarks import ContactProblem
 from .config import Config
 from .dual_bases import BasisContext, make_dual_basis
-from .estimator import error_bounds, eta_adm_v2, estimator_terms, trace_norm_B
-from .fom import FomSolution, solve_fom
+from .estimator import error_bounds, eta_adm_v2, estimator_terms
+from .query_context import QueryContext, build_query_context
 from .repair import rank_repair
 from .timing import best_of, time_eta_check
 
@@ -78,24 +78,20 @@ def solve_reduced_timed(rom: ContactROM, f_vec: np.ndarray, c_suite: np.ndarray)
     return ReducedSolution(rom.U @ u_r, rom.U_lam @ lam_r, u_r, lam_r, bool(ok), int(iters), seconds)
 
 
-def evaluate_query(problem: ContactProblem, rom: ContactROM, mu: np.ndarray, fom: FomSolution,
-                   C_lambda: float) -> dict:
-    """All per-query metrics (paper-convention gap ``c - B u~``)."""
-    K_mat, B_mat = problem.K_mat(mu), problem.B_mat(mu)
-    f_vec, c_vec = problem.f_vec(mu), problem.c_vec(mu)
-    res = solve_reduced_timed(rom, f_vec, -c_vec)
-    K_lu = spla.splu(K_mat.tocsc())
-    terms = estimator_terms(K_mat, B_mat, f_vec, c_vec, res.u, res.lam, K_lu, trace_norm_B(K_lu, B_mat))
-    bounds = error_bounds(terms, float(np.linalg.norm(fom.lam_vec)), C_lambda)
-    diff = fom.u_vec - res.u
+def evaluate_query(ctx: QueryContext, rom: ContactROM, C_lambda: float) -> dict:
+    """All per-query metrics (paper-convention gap ``c - B u~``) for one reduced model."""
+    res = solve_reduced_timed(rom, ctx.f_vec, -ctx.c_vec)
+    terms = estimator_terms(ctx.K_mat, ctx.B_mat, ctx.f_vec, ctx.c_vec, res.u, res.lam, ctx.K_lu, ctx.B_norm)
+    bounds = error_bounds(terms, float(np.linalg.norm(ctx.fom.lam_vec)), C_lambda)
+    diff = ctx.fom.u_vec - res.u
     return {
         "ok": float(res.ok),
-        "res_red": reduced_kkt_residual(rom, res, f_vec, -c_vec),
+        "res_red": reduced_kkt_residual(rom, res, ctx.f_vec, -ctx.c_vec),
         "lam_min": float(res.lam.min()),
-        "gap_viol": float(max(0.0, -(c_vec - B_mat @ res.u).min())),
-        "err_energy": energy_error(K_mat, fom.u_vec, res.u),
-        "err_abs": float(np.sqrt(diff @ (K_mat @ diff))),
-        "err_lam": float(np.linalg.norm(res.lam - fom.lam_vec) / (np.linalg.norm(fom.lam_vec) + 1e-300)),
+        "gap_viol": float(max(0.0, -(ctx.c_vec - ctx.B_mat @ res.u).min())),
+        "err_energy": energy_error(ctx.K_mat, ctx.fom.u_vec, res.u),
+        "err_abs": float(np.sqrt(diff @ (ctx.K_mat @ diff))),
+        "err_lam": float(np.linalg.norm(res.lam - ctx.fom.lam_vec) / (np.linalg.norm(ctx.fom.lam_vec) + 1e-300)),
         "k_rom": float(res.iterations),
         "m_r_act": float(np.sum(res.lam_r > 1e-12)),
         "t_online": res.seconds,
@@ -103,6 +99,13 @@ def evaluate_query(problem: ContactProblem, rom: ContactROM, mu: np.ndarray, fom
         "eta_adm_v2": eta_adm_v2(terms, C_lambda),
         **bounds,
     }
+
+
+def rom_for_query(problem: ContactProblem, cfg: Config, rom: ContactROM, ctx: QueryContext) -> ContactROM:
+    """The reduced model to use for this query: rebuilt from ``K(mu)`` when K varies, else the shared one."""
+    if not problem.k_varies:
+        return rom
+    return ContactROM(ctx.K_mat, -ctx.B_mat, rom.U, rom.U_lam, method=cfg.lcp_method)
 
 
 def build_reduced_model(problem: ContactProblem, cfg: Config, snaps: Snapshots, V_pod: np.ndarray,
@@ -129,21 +132,29 @@ def run_basis_audit_sets(problem: ContactProblem, cfg: Config, snaps: Snapshots,
                          kinds: tuple, r_dual_list: tuple, repair: bool) -> dict:
     """Audit every (basis kind, r_lambda) on several query sets: ``{set_name: {(kind, r): entry}}``.
 
-    Bases (and rank repair) are built once per (kind, r_lambda) and reused for every set.
+    Bases (and rank repair) are built once per (kind, r_lambda). Queries are the outer loop so each
+    full-order solve and factorisation is done once and shared by all reduced models.
     """
     V_pod = pod_primal_basis(snaps.U_snap, cfg.r_primal)
     C_lambda = float(np.linalg.norm(snaps.Lam_snap, axis=0).max())
-    fom_sets = {name: [solve_fom(problem, mu, cfg.lcp_method) for mu in mus] for name, mus in mu_sets.items()}
-    audits: dict = {name: {} for name in mu_sets}
-    for kind in kinds:
-        for r_dual in r_dual_list:
-            rom, meta = build_reduced_model(problem, cfg, snaps, V_pod, kind, r_dual, repair)
-            for name, mus in mu_sets.items():
-                rows = [evaluate_query(problem, rom, mu, fom, C_lambda) for mu, fom in zip(mus, fom_sets[name])]
-                entry = {key: np.array([row[key] for row in rows]) for key in rows[0]}
-                entry.update({key: np.full(len(rows), val) for key, val in meta.items()})
-                audits[name][(kind, r_dual)] = entry
+    models = {(kind, r_dual): build_reduced_model(problem, cfg, snaps, V_pod, kind, r_dual, repair)
+              for kind in kinds for r_dual in r_dual_list}
+    audits: dict = {}
+    for name, mus in mu_sets.items():
+        rows = {key: [] for key in models}
+        for mu in mus:
+            ctx = build_query_context(problem, mu)
+            for key, (rom, _) in models.items():
+                rows[key].append(evaluate_query(ctx, rom_for_query(problem, cfg, rom, ctx), C_lambda))
+        audits[name] = {key: finalize_entry(rows[key], models[key][1]) for key in models}
     return audits
+
+
+def finalize_entry(rows: list, meta: dict) -> dict:
+    """Stack per-query rows into arrays and attach the scalar build metadata."""
+    entry = {key: np.array([row[key] for row in rows]) for key in rows[0]}
+    entry.update({key: np.full(len(rows), val) for key, val in meta.items()})
+    return entry
 
 
 def run_basis_audit(problem: ContactProblem, cfg: Config, snaps: Snapshots, mu_test: np.ndarray,

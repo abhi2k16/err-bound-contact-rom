@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from .benchmarks import ContactProblem
-from .fom import solve_fom
+from .query_context import solve_fom_factored
 
 
 @dataclass
@@ -21,7 +21,7 @@ class Snapshots:
 
 def build_snapshots(problem: ContactProblem, mu_set: np.ndarray, method: str) -> Snapshots:
     """Solve the FOM at every row of ``mu_set`` and stack the results."""
-    sols = [solve_fom(problem, mu, method) for mu in mu_set]
+    sols = [solve_fom_factored(problem, mu)[0] for mu in mu_set]
     assert all(sol.converged for sol in sols), "FOM LCP failed during snapshot generation"
     U_snap = np.column_stack([sol.u_vec for sol in sols])
     Lam_snap = np.column_stack([sol.lam_vec for sol in sols])

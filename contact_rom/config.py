@@ -32,6 +32,23 @@ class B2Config:
 
 
 @dataclass(frozen=True)
+class B3Config:
+    """Benchmark B3: quarter-symmetric two-body 3D contact (hex8 blocks), parametrized K(mu)."""
+
+    n_xy: int = 20                      # elements per side in x and y (n_c = (n_xy + 1)^2)
+    nz_up: int = 6                      # element layers, upper block
+    nz_low: int = 6                     # element layers, lower block
+    nu: float = 0.3                     # Poisson ratio (both blocks)
+    k_ground: float = 0.01              # weak ground spring on the upper top face (keeps K SPD)
+    kappa: float = 0.5                  # curvature of the gap profile delta0 + kappa r^2
+    load_sigma: float = 0.5             # width of the Gaussian pressure profile (fraction of the side)
+    ratio_range: tuple = (0.5, 2.0)     # mu_1 = E_up / E_low
+    load_range: tuple = (0.01, 0.06)    # mu_2 = peak pressure P
+    delta_range: tuple = (0.05, 0.3)    # mu_3 = initial clearance delta0
+    extrap_load: tuple = (1.3, 2.0)     # extrapolation: P in this multiple of the training maximum
+
+
+@dataclass(frozen=True)
 class Config:
     """Single source of truth for every hyperparameter and path."""
 
@@ -56,9 +73,18 @@ class Config:
     e4_n_test: int = 10                 # test queries per sweep size
     e4_kind: str = "nmf"                # dual basis used in the sweep
     e4_r_dual: int = 12                 # r_lambda used in the sweep
+    e5_kinds: tuple = ("nmf", "cpg")      # dual bases run through the circuit breaker
+    e5_r_dual_list: tuple = (8, 16)     # their dual dimensions
+    e5_n_train: int = 40                # E5 training snapshots
+    e5_n_val: int = 25                  # E5 validation queries (threshold calibration)
+    e5_n_test: int = 25                 # E5 in-distribution test queries
+    e5_n_extrap: int = 25               # E5 extrapolation queries
+    e5_timing_queries: int = 6          # queries used to time the full-order solve
+    e5_repeats: int = 2                 # best-of repeats for FOM timing (B3 solves are slow)
     cond_max: float = 1e6               # rank-repair target for cond(B_r K_r^-1 B_r^T)
     r_dual_list_e3: tuple = (4, 8, 12, 16, 24)  # E3 dual dimensions
     out_dir: Path = Path("results")
     run_id: str = "step1"
     b1: B1Config = field(default_factory=B1Config)
     b2: B2Config = field(default_factory=B2Config)
+    b3: B3Config = field(default_factory=B3Config)
