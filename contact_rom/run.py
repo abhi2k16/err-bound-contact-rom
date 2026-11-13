@@ -9,6 +9,7 @@ from dataclasses import replace
 
 import numpy as np
 
+from .robustness import run_seeds, save_robustness, summarize
 from .acceptance import criterion4, print_summary, score_benchmark
 from .audit import run_basis_audit_sets, run_silent_failure_audit
 from .bases import Snapshots, build_snapshots
@@ -146,7 +147,7 @@ def run_summary(cfg: Config) -> None:
 def main() -> None:
     """CLI: ``python -m contact_rom [e1|e3|e4|e5|summary|all] [--bench b1|b2]``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "all"])
+    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "robustness", "all"])
     parser.add_argument("--bench", default="b1", choices=sorted(BENCHMARKS))
     parser.add_argument("--b3-n-xy", type=int, default=None, help="override B3 elements per side")
     parser.add_argument("--b3-nz", type=int, default=None, help="override B3 element layers per body")
@@ -154,6 +155,10 @@ def main() -> None:
     cfg = override_b3(Config(run_id=f"{args.bench}_{args.experiment}"), args.b3_n_xy, args.b3_nz)
     if args.experiment == "summary":
         return run_summary(cfg)
+    if args.experiment == "robustness":
+        results = run_seeds(cfg, BENCHMARKS, prepare, (42, 43, 44, 45, 46), (40, 200))
+        print("saved:", save_robustness(cfg, results))
+        return summarize(results)
     problem = BENCHMARKS[args.bench](cfg)
     print("metadata:", save_run_metadata(cfg, problem))
     print("Environment:", json.dumps(environment_info()))
