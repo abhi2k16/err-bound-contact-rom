@@ -83,3 +83,18 @@ def find_crossover(x_vals: np.ndarray, speedups: np.ndarray) -> float:
             frac = -log_s[i] / (log_s[i + 1] - log_s[i])
             return float(np.exp(np.log(x_vals[i]) + frac * (np.log(x_vals[i + 1]) - np.log(x_vals[i]))))
     return float("nan")
+
+
+def find_break_even(x_vals: np.ndarray, speedups: np.ndarray) -> float:
+    """Break-even size: the size from which ``S`` stays above 1 (log-log interpolation after the last point with ``S <= 1``).
+
+    NaN if ``S > 1`` over the whole range or ``S <= 1`` at the largest size. Unlike ``find_crossover`` this ignores
+    early noisy sign changes: for monotone curves the two agree.
+    """
+    log_s = np.log(speedups)
+    below = np.where(log_s <= 0.0)[0]
+    if below.size == 0 or below[-1] == len(x_vals) - 1:
+        return float("nan")
+    i = int(below[-1])
+    frac = -log_s[i] / (log_s[i + 1] - log_s[i]) if log_s[i + 1] != log_s[i] else 0.0
+    return float(np.exp(np.log(x_vals[i]) + frac * (np.log(x_vals[i + 1]) - np.log(x_vals[i]))))

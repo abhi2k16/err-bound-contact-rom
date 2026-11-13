@@ -72,6 +72,7 @@ class Config:
     e4_n_train: int = 40                # snapshots per sweep size
     e4_n_test: int = 10                 # test queries per sweep size
     e4_grids_b3: tuple = (2, 3, 4, 6, 8, 12, 16, 20)   # B3 n_xy values for the N sweep
+    e4_codes_b3_small: tuple = (11, 12, 21)             # B3 very small meshes, code = 10 n_xy + layers (N = 24, 40, 63)
     e4_kind: str = "nmf"                # dual basis used in the sweep
     e4_r_dual: int = 12                 # r_lambda used in the sweep
     e5_kinds: tuple = ("nmf", "cpg")      # dual bases run through the circuit breaker

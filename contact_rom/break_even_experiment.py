@@ -11,7 +11,7 @@ from .bases import Snapshots, build_snapshots, pod_primal_basis
 from .benchmark_3d import build_b3
 from .benchmarks import ContactProblem, build_b2
 from .config import Config
-from .cost import ProblemSizes, ReducedSizes, find_crossover, problem_sizes, speedup_pred
+from .cost import ProblemSizes, ReducedSizes, find_break_even, problem_sizes, speedup_pred
 from .timing import FomTimings, time_fom_queries
 
 REGIMES = {"aff": False, "var": True}   # name -> K parameter-varying?
@@ -92,6 +92,12 @@ def sweep_problem_b3(cfg: Config, n_xy: int) -> ContactProblem:
     return build_b3(replace(cfg.b3, n_xy=n_xy, nz_up=nz, nz_low=nz))
 
 
+def sweep_problem_b3_code(cfg: Config, code: int) -> ContactProblem:
+    """B3 with ``code = 10 * n_xy + nz`` (elements per side, layers per body); used for very small meshes."""
+    n_xy, nz = divmod(code, 10)
+    return build_b3(replace(cfg.b3, n_xy=n_xy, nz_up=nz, nz_low=nz))
+
+
 def run_sweep(cfg: Config, grids: tuple | None = None, builder=sweep_problem) -> list:
     """N sweep over ``grids`` (default ``cfg.e4_grids``); sizes without contact are skipped."""
     rows = [sweep_one_size(cfg, n_grid, builder) for n_grid in (cfg.e4_grids if grids is None else grids)]
@@ -103,8 +109,8 @@ def crossovers(rows: list) -> dict:
     n_vals = np.array([row["N"] for row in rows], float)
     out = {}
     for regime in REGIMES:
-        pred = find_crossover(n_vals, np.array([row[f"S_pred_{regime}"] for row in rows]))
-        meas = find_crossover(n_vals, np.array([row[f"S_meas_{regime}"] for row in rows]))
+        pred = find_break_even(n_vals, np.array([row[f"S_pred_{regime}"] for row in rows]))
+        meas = find_break_even(n_vals, np.array([row[f"S_meas_{regime}"] for row in rows]))
         ratio = pred / meas if np.isfinite(pred) and np.isfinite(meas) else float("nan")
         out[regime] = {"N_pred": pred, "N_meas": meas, "ratio": ratio}
     return out

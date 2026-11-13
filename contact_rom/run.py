@@ -22,7 +22,7 @@ from .timing import time_fom_queries
 from .config import Config
 from .dual_bases import DUAL_KINDS
 from .break_even_experiment import (criterion4_verdict, crossovers, run_e4_entries, run_sweep,
-                                    sweep_problem_b3)
+                                    sweep_problem_b3, sweep_problem_b3_code)
 from .environment import environment_info, save_run_metadata
 from .estimator import tau_adm_from_snapshots
 from .fom import cross_check_methods, verify_fom_on_samples
@@ -85,6 +85,8 @@ def run_e4(cfg: Config, problem: ContactProblem) -> None:
     """E4: predicted vs measured speedup per basis plus the mesh-size sweep (B2); B3 runs only its sweep."""
     if problem.name == "B3":
         sweep = run_sweep(cfg, cfg.e4_grids_b3, sweep_problem_b3)
+        sweep += run_sweep(cfg, cfg.e4_codes_b3_small, sweep_problem_b3_code)
+        sweep.sort(key=lambda row: row["N"])
         cross = crossovers(sweep)
         print_sweep(sweep, cross, criterion4_verdict(cross), "B3")
         print("saved:", save_e4(cfg, "e4_sweep_b3", sweep))
