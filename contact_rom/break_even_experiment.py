@@ -8,6 +8,7 @@ import numpy as np
 
 from .audit import build_reduced_model, evaluate_query, solve_reduced_timed
 from .bases import Snapshots, build_snapshots, pod_primal_basis
+from .benchmark_3d import build_b3
 from .benchmarks import ContactProblem, build_b2
 from .config import Config
 from .cost import ProblemSizes, ReducedSizes, find_crossover, problem_sizes, speedup_pred
@@ -56,9 +57,9 @@ def sweep_problem(cfg: Config, n_grid: int) -> ContactProblem:
     return build_b2(cfg_b2)
 
 
-def sweep_one_size(cfg: Config, n_grid: int) -> dict | None:
+def sweep_one_size(cfg: Config, n_grid: int, builder=sweep_problem) -> dict | None:
     """Measured and predicted speedups for one mesh size; ``None`` if no contact occurs in the snapshots."""
-    problem = sweep_problem(cfg, n_grid)
+    problem = builder(cfg, n_grid)
     rng = np.random.default_rng(cfg.seed + n_grid)
     snaps = build_snapshots(problem, problem.sample_mu(rng, cfg.e4_n_train), cfg.lcp_method)
     if snaps.Lam_snap.max() <= 0.0:
@@ -85,9 +86,15 @@ def sweep_one_size(cfg: Config, n_grid: int) -> dict | None:
             "S_pred_aff": pred["aff"], "S_meas_aff": meas["aff"], "S_pred_var": pred["var"], "S_meas_var": meas["var"]}
 
 
-def run_sweep(cfg: Config) -> list:
-    """N sweep over ``cfg.e4_grids``; sizes without contact are skipped."""
-    rows = [sweep_one_size(cfg, n_grid) for n_grid in cfg.e4_grids]
+def sweep_problem_b3(cfg: Config, n_xy: int) -> ContactProblem:
+    """B3 with ``n_xy`` elements per side and layers per body scaled as ``0.3 n_xy`` (at least 2)."""
+    nz = max(2, round(0.3 * n_xy))
+    return build_b3(replace(cfg.b3, n_xy=n_xy, nz_up=nz, nz_low=nz))
+
+
+def run_sweep(cfg: Config, grids: tuple | None = None, builder=sweep_problem) -> list:
+    """N sweep over ``grids`` (default ``cfg.e4_grids``); sizes without contact are skipped."""
+    rows = [sweep_one_size(cfg, n_grid, builder) for n_grid in (cfg.e4_grids if grids is None else grids)]
     return [row for row in rows if row is not None]
 
 

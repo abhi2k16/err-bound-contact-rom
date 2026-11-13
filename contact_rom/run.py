@@ -20,7 +20,8 @@ from .query_context import cross_check_sparse_solver
 from .timing import time_fom_queries
 from .config import Config
 from .dual_bases import DUAL_KINDS
-from .break_even_experiment import criterion4_verdict, crossovers, run_e4_entries, run_sweep
+from .break_even_experiment import (criterion4_verdict, crossovers, run_e4_entries, run_sweep,
+                                    sweep_problem_b3)
 from .environment import environment_info, save_run_metadata
 from .estimator import tau_adm_from_snapshots
 from .fom import cross_check_methods, verify_fom_on_samples
@@ -80,7 +81,13 @@ def run_e3(cfg: Config, problem: ContactProblem) -> None:
 
 
 def run_e4(cfg: Config, problem: ContactProblem) -> None:
-    """E4: predicted vs measured speedup for every basis, then the mesh-size sweep (membrane only)."""
+    """E4: predicted vs measured speedup per basis plus the mesh-size sweep (B2); B3 runs only its sweep."""
+    if problem.name == "B3":
+        sweep = run_sweep(cfg, cfg.e4_grids_b3, sweep_problem_b3)
+        cross = crossovers(sweep)
+        print_sweep(sweep, cross, criterion4_verdict(cross))
+        print("saved:", save_e4(cfg, "e4_sweep_b3", sweep))
+        return
     snaps, mu_test, _ = prepare(cfg, problem)
     audits = run_basis_audit_sets(problem, cfg, snaps, {"test": mu_test}, DUAL_KINDS, cfg.r_dual_list_e3, repair=True)
     rows, fom, _ = run_e4_entries(cfg, problem, snaps, mu_test, audits["test"])
@@ -152,7 +159,7 @@ def main() -> None:
         run_e1(cfg, problem)
     if args.experiment in ("e3", "all"):
         run_e3(cfg, problem)
-    if args.experiment in ("e4", "all") and problem.name != "B3":
+    if args.experiment == "e4" or (args.experiment == "all" and problem.name != "B3"):
         run_e4(cfg, problem)
     if args.experiment == "e5":
         run_e5(cfg, problem)
