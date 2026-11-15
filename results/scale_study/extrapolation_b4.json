@@ -1,0 +1,192 @@
+{
+ "bench": "b4",
+ "seeds": [
+  42,
+  43,
+  44,
+  45,
+  46
+ ],
+ "rows": {
+  "svd|test": {
+   "err_med": 1.3017017160074842,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "nmf|test": {
+   "err_med": 0.022128275784709814,
+   "share_above_5pct": 0.145,
+   "silent_share": 0.145,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 29,
+   "missed": 3,
+   "false_alarm": 0.391812865497076,
+   "flagged_share": 0.465
+  },
+  "cpg|test": {
+   "err_med": 0.03881967634795812,
+   "share_above_5pct": 0.315,
+   "silent_share": 0.315,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 63,
+   "missed": 3,
+   "false_alarm": 0.7591240875912408,
+   "flagged_share": 0.82
+  },
+  "gis|test": {
+   "err_med": 0.3961716801176727,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 1,
+   "false_alarm": NaN,
+   "flagged_share": 0.995
+  },
+  "rid|test": {
+   "err_med": 0.0031070074647717508,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 0,
+   "missed": 0,
+   "false_alarm": 0.0,
+   "flagged_share": 0.0
+  },
+  "svd|load": {
+   "err_med": 1.5475125143890103,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "nmf|load": {
+   "err_med": 0.04972053366496187,
+   "share_above_5pct": 0.49,
+   "silent_share": 0.49,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 98,
+   "missed": 0,
+   "false_alarm": 1.0,
+   "flagged_share": 1.0
+  },
+  "cpg|load": {
+   "err_med": 0.1358796921274269,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "gis|load": {
+   "err_med": 0.677591088938903,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "rid|load": {
+   "err_med": 0.026411363319233903,
+   "share_above_5pct": 0.09,
+   "silent_share": 0.09,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 18,
+   "missed": 5,
+   "false_alarm": 0.25274725274725274,
+   "flagged_share": 0.295
+  },
+  "svd|centre shift": {
+   "err_med": 1.1140374244642057,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "nmf|centre shift": {
+   "err_med": 0.11639696503455671,
+   "share_above_5pct": 0.975,
+   "silent_share": 0.975,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 195,
+   "missed": 0,
+   "false_alarm": 1.0,
+   "flagged_share": 1.0
+  },
+  "cpg|centre shift": {
+   "err_med": 0.17520253241147032,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "gis|centre shift": {
+   "err_med": 0.3569468216568088,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "rid|centre shift": {
+   "err_med": 0.020634024175624405,
+   "share_above_5pct": 0.015,
+   "silent_share": 0.015,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 3,
+   "missed": 2,
+   "false_alarm": 0.06091370558375635,
+   "flagged_share": 0.065
+  }
+ }
+}
