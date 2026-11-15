@@ -31,7 +31,8 @@ from .estimator import tau_adm_from_snapshots
 from .metrics import silent_failure_mask
 
 INDICATORS = ("eta_adm", "eta_adm_v2")
-RULES = ("min09", "rel", "hybrid")
+RULES = ("min09", "rel", "hybrid", "q10", "q25", "costopt")
+W_FN = 20.0                                  # cost of a false acceptance relative to a needless fallback
 KEEP = ("err_energy", "err_abs", "res_red", "eta_adm", "eta_adm_v2", "eta_sign", "eta_gap", "eta_comp", "bound1",
         "bound_Clam", "r_dual_eff", "r_rep")
 
@@ -90,13 +91,29 @@ def seed_bootstrap(per_seed: dict, n_boot: int = 2000, seed: int = 0) -> dict:
 
 
 def threshold(rule: str, val: dict, key: str, cfg: Config, tau_rel: float) -> float:
+    """Threshold of ``rule`` from the validation entry ``val`` (NaN when the rule is undefined).
+
+    ``q10`` / ``q25``: 10th / 25th percentile of the indicator over validation silent failures (accepts a validation
+    false-negative rate of about 10% / 25% in exchange for fewer false alarms); ``costopt``: minimises
+    ``W_FN * (validation silent failures accepted) + (validation accurate queries flagged)`` over the observed values.
+    All three need at least one validation silent failure.
+    """
     silent = silent_failure_mask(val, cfg)
     tau_min = float(cfg.tau_margin * val[key][silent].min()) if silent.any() else float("nan")
     if rule == "min09":
         return tau_min
     if rule == "rel":
         return tau_rel
-    return tau_rel if np.isnan(tau_min) else min(tau_min, tau_rel)
+    if rule == "hybrid":
+        return tau_rel if np.isnan(tau_min) else min(tau_min, tau_rel)
+    if not silent.any():
+        return float("nan")
+    if rule in ("q10", "q25"):
+        return float(np.percentile(val[key][silent], 10 if rule == "q10" else 25))
+    good = val["err_energy"] <= cfg.err_silent
+    cand = np.sort(np.unique(np.concatenate([[0.0], val[key][silent | good]])))
+    cost = [W_FN * np.sum(silent & (val[key] <= c)) + np.sum(good & (val[key] > c)) for c in cand]
+    return float(cand[int(np.argmin(cost))])
 
 
 def confusion(test: dict, key: str, tau: float, cfg: Config) -> dict:
