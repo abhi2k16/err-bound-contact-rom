@@ -21,7 +21,7 @@ from fea_engine.elements.solids import Hex8Solid3D
 from fea_engine.material import D_solid3d, Material
 
 from .benchmarks import ContactProblem
-from .config import B3Config
+from .config import B3Config, B4Config
 
 HEX_CORNERS = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],
                         [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], dtype=float)
@@ -161,3 +161,59 @@ def build_b3(cfg: B3Config) -> ContactProblem:
     out_ranges = (cfg.ratio_range, (cfg.extrap_load[0] * load_hi, cfg.extrap_load[1] * load_hi), cfg.delta_range)
     return ContactProblem("B3", free.size, rows.size, K_mat, f_vec, lambda mu: B_const, c_vec, sampler(in_ranges),
                           elem_dofs=elem_dofs, k_varies=True, sample_mu_extrap=sampler(out_ranges))
+
+
+def build_b4(cfg: B4Config) -> ContactProblem:
+    """Benchmark B4: a single 3D elastic block, clamped on its four lateral faces, resting on a rigid curved foundation.
+
+    Constant stiffness. The load is a Gaussian pressure on the top face; the foundation centre ``(xc, yc)`` moves with the
+    parameters, so that the contact patch translates over the candidate nodes of the bottom face (no symmetry plane is
+    used). ``mu = (P, xc, yc)``. Constraint (paper convention): ``-u_z <= c`` at each candidate bottom node, with
+    ``c = clearance0 + kappa ((x - xc)^2 + (y - yc)^2)`` and coordinates as fractions of the side.
+    """
+    n, nz = cfg.n_xy, cfg.nz
+    layout = GridLayout(n, nz, 1)
+    n_nodes = layout.nodes_per_body[0]
+    n_all = 3 * n_nodes
+    K_all = assemble_body(reference_stiffness(cfg.nu), body_connectivity(layout, 0, nz), n_nodes)
+    n1 = n + 1
+    kk, jj, ii = np.meshgrid(np.arange(nz + 1), np.arange(n1), np.arange(n1), indexing="ij")
+    kk, jj, ii = kk.ravel(), jj.ravel(), ii.ravel()
+    ids = layout.node(0, ii, jj, kk)
+    lateral = ids[(ii == 0) | (ii == n) | (jj == 0) | (jj == n)]
+    fixed = np.unique(np.concatenate([3 * lateral, 3 * lateral + 1, 3 * lateral + 2]))
+    free = np.setdiff1d(np.arange(n_all), fixed)
+    pos = -np.ones(n_all, dtype=int)
+    pos[free] = np.arange(free.size)
+    K_const = K_all[free][:, free].tocsr()
+    # contact candidates: interior nodes of the bottom face (k = 0)
+    bi, bj = np.meshgrid(np.arange(1, n), np.arange(1, n), indexing="ij")
+    bi, bj = bi.ravel(), bj.ravel()
+    bottom = layout.node(0, bi, bj, np.zeros_like(bi))
+    rows = np.arange(bottom.size)
+    B_const = sp.csr_matrix((-np.ones(rows.size), (rows, pos[3 * bottom + 2])), shape=(rows.size, free.size))
+    cx, cy = bi / n, bj / n
+    # top-face Gaussian pressure, centred on the block
+    ti, tj = np.meshgrid(np.arange(1, n), np.arange(1, n), indexing="ij")
+    ti, tj = ti.ravel(), tj.ravel()
+    top = layout.node(0, ti, tj, np.full_like(ti, nz))
+    bump = np.exp(-(((ti / n - 0.5) ** 2 + (tj / n - 0.5) ** 2)) / (2 * cfg.load_sigma ** 2 * 0.25))
+
+    def f_vec(mu: np.ndarray) -> np.ndarray:
+        vec = np.zeros(free.size)
+        vec[pos[3 * top + 2]] = -float(mu[0]) * bump
+        return vec
+
+    def c_vec(mu: np.ndarray) -> np.ndarray:
+        return cfg.clearance0 + cfg.curvature * ((cx - mu[1]) ** 2 + (cy - mu[2]) ** 2)
+
+    def sample_mu(rng: np.random.Generator, n_samples: int) -> np.ndarray:
+        lo = np.array([cfg.load_range[0], cfg.center_range[0], cfg.center_range[0]])
+        hi = np.array([cfg.load_range[1], cfg.center_range[1], cfg.center_range[1]])
+        return lo + rng.random((n_samples, 3)) * (hi - lo)
+
+    conn = body_connectivity(layout, 0, nz)
+    dofs = pos[(3 * conn[:, :, None] + np.arange(3)[None, None, :]).reshape(len(conn), 24)]
+    elem_dofs = [row[row >= 0] for row in dofs]
+    return ContactProblem("B4", free.size, rows.size, lambda mu: K_const, f_vec, lambda mu: B_const, c_vec, sample_mu,
+                          elem_dofs=elem_dofs)

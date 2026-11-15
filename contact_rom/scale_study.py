@@ -42,7 +42,7 @@ def extrap_sets(cfg: Config, bench: str, rng: np.random.Generator, n: int) -> di
         c_lo, c_hi = b.curvature_range[1] * 1.25, b.curvature_range[1] * 1.7
         geom = np.column_stack([b.load_range[0] + rng.random(n) * (b.load_range[1] - b.load_range[0]), c_lo + rng.random(n) * (c_hi - c_lo)])
         return {"load": load, "geometry": geom}
-    b = cfg.b2
+    b = cfg.b4 if bench == "b4" else cfg.b2
     lo, hi = b.load_range[1] * 1.3, b.load_range[1] * 2.0
     centre = b.center_range[0] + rng.random((n, 2)) * (b.center_range[1] - b.center_range[0])
     load = np.column_stack([lo + rng.random(n) * (hi - lo), centre])

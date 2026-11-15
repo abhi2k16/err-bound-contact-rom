@@ -49,6 +49,20 @@ class B3Config:
 
 
 @dataclass(frozen=True)
+class B4Config:
+    """Benchmark B4: 3D elastic block, clamped on its lateral faces, resting on a rigid curved foundation (constant K)."""
+
+    n_xy: int = 12                      # elements per side in x and y; n_c = (n_xy - 1)^2 candidate bottom nodes
+    nz: int = 3                         # element layers
+    nu: float = 0.3                     # Poisson ratio (E = 1)
+    clearance0: float = 0.05            # base clearance between the block bottom and the foundation
+    curvature: float = 1.0              # foundation curvature kappa (clearance grows with the squared distance from the centre)
+    load_sigma: float = 0.5             # width of the Gaussian pressure on the top face (fraction of the side)
+    load_range: tuple = (0.02, 0.10)    # mu_1: peak pressure
+    center_range: tuple = (0.35, 0.65)  # mu_2, mu_3: foundation centre (xc, yc) as fractions of the side
+
+
+@dataclass(frozen=True)
 class Config:
     """Single source of truth for every hyperparameter and path."""
 
@@ -90,3 +104,4 @@ class Config:
     b1: B1Config = field(default_factory=B1Config)
     b2: B2Config = field(default_factory=B2Config)
     b3: B3Config = field(default_factory=B3Config)
+    b4: B4Config = field(default_factory=B4Config)

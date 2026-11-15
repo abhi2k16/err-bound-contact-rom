@@ -13,7 +13,7 @@ from .robustness import run_seeds, save_robustness, summarize
 from .acceptance import criterion4, print_summary, score_benchmark
 from .audit import run_basis_audit_sets, run_silent_failure_audit
 from .bases import Snapshots, build_snapshots
-from .benchmark_3d import build_b3
+from .benchmark_3d import build_b3, build_b4
 from .benchmarks import ContactProblem, build_b1, build_b2
 from .calibration import calibrate_all
 from .circuit_breaker import breaker_table
@@ -33,7 +33,7 @@ from .report import (print_audit_table, print_calibrated_summary, print_calibrat
                      print_estimator_table, print_step1_summary, save_audit)
 
 BENCHMARKS = {"b1": lambda cfg: build_b1(cfg.b1), "b2": lambda cfg: build_b2(cfg.b2),
-              "b3": lambda cfg: build_b3(cfg.b3)}
+              "b3": lambda cfg: build_b3(cfg.b3), "b4": lambda cfg: build_b4(cfg.b4)}
 
 
 def prepare(cfg: Config, problem: ContactProblem) -> tuple:
