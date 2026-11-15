@@ -1,0 +1,33 @@
+\begin{tabular}{@{}lllrrrrrrrr@{}}
+\toprule
+Bench. & Variant & Basis & Median err. & $>5\%$ (\%) & cond. & $r_u$ & kFLOPs & Speedup & Fallback & Missed \\
+\midrule
+B1 & Primal only & -- & 0.0023 & 44 & $\infty$ & 20 & 131 & 0.04 & -- & -- \\
+ & Primal--dual, no repair & SVD & 0.95 & 100 & 2e1 & 20 & 29 & 0.65 & -- & -- \\
+ & Primal--dual, repair & SVD & 0.95 & 100 & 2e1 & 20 & 29 & 0.58 & -- & -- \\
+ & Repair + screen + fallback & SVD & 0 & 0 & 2e1 & 20 & 29 & 0.36 & 1.00 & 0 \\
+ & Primal--dual, no repair & NMF & 0.0021 & 0 & 1e5 & 20 & 32 & 0.37 & -- & -- \\
+ & Primal--dual, repair & NMF & 0.0021 & 0 & 1e5 & 20 & 32 & 0.37 & -- & -- \\
+ & Repair + screen + fallback & NMF & 0.0021 & 0 & 1e5 & 20 & 32 & 0.36 & 0.00 & 0 \\
+ & Primal--dual, no repair & CPG & 0.0038 & 0 & 1e7 & 20 & 29 & 0.24 & -- & -- \\
+ & Primal--dual, repair & CPG & 0.0038 & 0 & 1e7 & 23 & 36 & 0.24 & -- & -- \\
+ & Repair + screen + fallback & CPG & 0.0038 & 0 & 1e7 & 23 & 36 & 0.24 & 0.00 & 0 \\
+ & Primal--dual, no repair & gIS & 0.18 & 68 & $\infty$ & 20 & 61 & 0.07 & -- & -- \\
+ & Primal--dual, repair & gIS & 0.061 & 52 & 1e3 & 26 & 52 & 0.56 & -- & -- \\
+ & Repair + screen + fallback & gIS & 0 & 0 & 1e3 & 26 & 52 & 0.41 & 0.55 & 0 \\
+\midrule
+B2 & Primal only & -- & 0.031 & 11 & $\infty$ & 20 & 1615 & 0.01 & -- & -- \\
+ & Primal--dual, no repair & SVD & 0.93 & 100 & 7e1 & 20 & 38 & 1.99 & -- & -- \\
+ & Primal--dual, repair & SVD & 0.93 & 100 & 7e1 & 20 & 38 & 2.05 & -- & -- \\
+ & Repair + screen + fallback & SVD & 0 & 0 & 7e1 & 20 & 38 & 0.66 & 1.00 & 0 \\
+ & Primal--dual, no repair & NMF & 0.038 & 26 & 1e4 & 20 & 39 & 1.47 & -- & -- \\
+ & Primal--dual, repair & NMF & 0.038 & 26 & 1e4 & 20 & 39 & 1.32 & -- & -- \\
+ & Repair + screen + fallback & NMF & 0.022 & 3 & 1e4 & 20 & 39 & 0.89 & 0.39 & 6 \\
+ & Primal--dual, no repair & CPG & 0.047 & 44 & 2e5 & 20 & 37 & 1.30 & -- & -- \\
+ & Primal--dual, repair & CPG & 0.047 & 44 & 2e5 & 20 & 37 & 1.42 & -- & -- \\
+ & Repair + screen + fallback & CPG & 0 & 0 & 2e5 & 20 & 37 & 0.65 & 0.83 & 0 \\
+ & Primal--dual, no repair & gIS & 0.19 & 82 & $\infty$ & 20 & 41 & 0.56 & -- & -- \\
+ & Primal--dual, repair & gIS & 0.19 & 83 & 1e5 & 23 & 49 & 1.42 & -- & -- \\
+ & Repair + screen + fallback & gIS & 0 & 4 & 1e5 & 23 & 49 & 0.60 & 0.90 & 7 \\
+\bottomrule
+\end{tabular}

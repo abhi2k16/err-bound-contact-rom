@@ -1,0 +1,192 @@
+{
+ "bench": "b2",
+ "seeds": [
+  42,
+  43,
+  44,
+  45,
+  46
+ ],
+ "rows": {
+  "svd|test": {
+   "err_med": 0.932923440595868,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "nmf|test": {
+   "err_med": 0.037642677439128205,
+   "share_above_5pct": 0.255,
+   "silent_share": 0.255,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 51,
+   "missed": 6,
+   "false_alarm": 0.2214765100671141,
+   "flagged_share": 0.39
+  },
+  "cpg|test": {
+   "err_med": 0.046845587330137536,
+   "share_above_5pct": 0.445,
+   "silent_share": 0.445,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 89,
+   "missed": 0,
+   "false_alarm": 0.7027027027027027,
+   "flagged_share": 0.835
+  },
+  "gis|test": {
+   "err_med": 0.19047039504205393,
+   "share_above_5pct": 0.83,
+   "silent_share": 0.83,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 166,
+   "missed": 7,
+   "false_alarm": 0.6176470588235294,
+   "flagged_share": 0.9
+  },
+  "rid|test": {
+   "err_med": 0.0012790328349500187,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 0,
+   "missed": 0,
+   "false_alarm": 0.0,
+   "flagged_share": 0.0
+  },
+  "svd|load": {
+   "err_med": 1.971121932513101,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "nmf|load": {
+   "err_med": 0.15719784164619183,
+   "share_above_5pct": 0.99,
+   "silent_share": 0.99,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 198,
+   "missed": 0,
+   "false_alarm": 1.0,
+   "flagged_share": 1.0
+  },
+  "cpg|load": {
+   "err_med": 0.32944153809334437,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "gis|load": {
+   "err_med": 1.0204468446175952,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "rid|load": {
+   "err_med": 0.04439039294153914,
+   "share_above_5pct": 0.45,
+   "silent_share": 0.45,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 90,
+   "missed": 78,
+   "false_alarm": 0.01818181818181818,
+   "flagged_share": 0.07
+  },
+  "svd|centre shift": {
+   "err_med": 0.7929053849649595,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 1.0,
+   "n": 200,
+   "n_silent": 200,
+   "missed": 0,
+   "false_alarm": NaN,
+   "flagged_share": 1.0
+  },
+  "nmf|centre shift": {
+   "err_med": 0.12543998902940207,
+   "share_above_5pct": 0.96,
+   "silent_share": 0.96,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 0.99,
+   "n": 200,
+   "n_silent": 192,
+   "missed": 2,
+   "false_alarm": 0.125,
+   "flagged_share": 0.955
+  },
+  "cpg|centre shift": {
+   "err_med": 0.1716134400844465,
+   "share_above_5pct": 0.96,
+   "silent_share": 0.96,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 0.99,
+   "n": 200,
+   "n_silent": 192,
+   "missed": 2,
+   "false_alarm": 0.125,
+   "flagged_share": 0.955
+  },
+  "gis|centre shift": {
+   "err_med": 0.22907244852842387,
+   "share_above_5pct": 0.955,
+   "silent_share": 0.955,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 0.99,
+   "n": 200,
+   "n_silent": 191,
+   "missed": 2,
+   "false_alarm": 0.2222222222222222,
+   "flagged_share": 0.955
+  },
+  "rid|centre shift": {
+   "err_med": 0.008237285202059717,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 1.0,
+   "bound_Clam_valid": 0.965,
+   "n": 200,
+   "n_silent": 0,
+   "missed": 0,
+   "false_alarm": 0.005,
+   "flagged_share": 0.005
+  }
+ }
+}

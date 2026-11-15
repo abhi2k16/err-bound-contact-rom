@@ -1,0 +1,67 @@
+{
+  "config": {
+    "seed": 42,
+    "n_train": 60,
+    "n_test": 40,
+    "tol_kkt_fom": 1e-10,
+    "tol_sym": 1e-12,
+    "lcp_method": "active_set",
+    "r_primal": 20,
+    "r_dual_list": [
+      4,
+      8,
+      12,
+      16,
+      20
+    ],
+    "tol_kkt_red": 1e-12,
+    "err_silent": 0.05,
+    "cond_max": 1000000.0,
+    "r_dual_list_e3": [
+      4,
+      8,
+      12,
+      16,
+      24
+    ],
+    "out_dir": "results",
+    "run_id": "b2_all",
+    "b1": {
+      "n_dof": 60,
+      "n_contact": 30,
+      "k_spring": 1.0,
+      "k_ground": 0.05,
+      "clearance0": 1.0,
+      "load_range": [
+        0.05,
+        0.3
+      ],
+      "curvature_range": [
+        1.0,
+        6.0
+      ]
+    },
+    "b2": {
+      "n_grid": 18,
+      "n_sub": 12,
+      "clearance0": 0.5,
+      "curvature": 4.0,
+      "load_range": [
+        0.05,
+        0.25
+      ],
+      "center_range": [
+        0.35,
+        0.65
+      ]
+    }
+  },
+  "environment": {
+    "python": "3.14.3",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "fea_engine": "1.0.1",
+    "rom_engine": "0.2.0"
+  }
+}

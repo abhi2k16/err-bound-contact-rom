@@ -1,0 +1,140 @@
+{
+ "bench": "b1",
+ "rows": {
+  "svd|30": {
+   "N": 30,
+   "n_c": 15,
+   "err_med": 1.8444300662929365,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "S_aff": 0.38894376382288093
+  },
+  "nmf|30": {
+   "N": 30,
+   "n_c": 15,
+   "err_med": 0.0001253198844988027,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 1.0,
+   "S_aff": 0.2138012983727226
+  },
+  "gis|30": {
+   "N": 30,
+   "n_c": 15,
+   "err_med": 1.155676027915208e-15,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 0.975,
+   "S_aff": 0.451489563980815
+  },
+  "svd|60": {
+   "N": 60,
+   "n_c": 30,
+   "err_med": 1.0247861949756074,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "S_aff": 0.5677031460921262
+  },
+  "nmf|60": {
+   "N": 60,
+   "n_c": 30,
+   "err_med": 0.0020021913224656926,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 1.0,
+   "S_aff": 0.3295950830090798
+  },
+  "gis|60": {
+   "N": 60,
+   "n_c": 30,
+   "err_med": 0.0614954267770716,
+   "share_above_5pct": 0.5083333333333333,
+   "silent_share": 0.5083333333333333,
+   "bound1_valid": 1.0,
+   "S_aff": 0.5181593157930384
+  },
+  "svd|120": {
+   "N": 120,
+   "n_c": 60,
+   "err_med": 0.8723362851932082,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "S_aff": 0.7461124089961898
+  },
+  "nmf|120": {
+   "N": 120,
+   "n_c": 60,
+   "err_med": 0.0034271787412094917,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 1.0,
+   "S_aff": 0.47282663452002616
+  },
+  "gis|120": {
+   "N": 120,
+   "n_c": 60,
+   "err_med": 0.4084379382574396,
+   "share_above_5pct": 0.8166666666666667,
+   "silent_share": 0.8166666666666667,
+   "bound1_valid": 1.0,
+   "S_aff": 0.7541236759480664
+  },
+  "svd|240": {
+   "N": 240,
+   "n_c": 120,
+   "err_med": 0.8796261213633266,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "S_aff": 1.6316601471094032
+  },
+  "nmf|240": {
+   "N": 240,
+   "n_c": 120,
+   "err_med": 0.004991531624193357,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 1.0,
+   "S_aff": 1.120360608510195
+  },
+  "gis|240": {
+   "N": 240,
+   "n_c": 120,
+   "err_med": 0.5393714241018222,
+   "share_above_5pct": 0.8833333333333333,
+   "silent_share": 0.8833333333333333,
+   "bound1_valid": 1.0,
+   "S_aff": 1.328931027499353
+  },
+  "svd|480": {
+   "N": 480,
+   "n_c": 240,
+   "err_med": 0.8702462617133473,
+   "share_above_5pct": 1.0,
+   "silent_share": 1.0,
+   "bound1_valid": 1.0,
+   "S_aff": 3.9640523490991617
+  },
+  "nmf|480": {
+   "N": 480,
+   "n_c": 240,
+   "err_med": 0.004247265040842205,
+   "share_above_5pct": 0.0,
+   "silent_share": 0.0,
+   "bound1_valid": 1.0,
+   "S_aff": 2.9061428102502056
+  },
+  "gis|480": {
+   "N": 480,
+   "n_c": 240,
+   "err_med": 0.5978584201670964,
+   "share_above_5pct": 0.8916666666666667,
+   "silent_share": 0.8916666666666667,
+   "bound1_valid": 1.0,
+   "S_aff": 3.3966561755574487
+  }
+ }
+}
