@@ -149,7 +149,7 @@ def run_summary(cfg: Config) -> None:
 def main() -> None:
     """CLI: ``python -m contact_rom [e1|e3|e4|e5|summary|all] [--bench b1|b2]``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "robustness", "calibration", "basiscomp", "timingstudy", "ablation", "all"])
+    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "robustness", "calibration", "basiscomp", "timingstudy", "ablation", "extrap", "mesh", "all"])
     parser.add_argument("--bench", default="b1", choices=sorted(BENCHMARKS))
     parser.add_argument("--b3-n-xy", type=int, default=None, help="override B3 elements per side")
     parser.add_argument("--b3-nz", type=int, default=None, help="override B3 element layers per body")
@@ -168,6 +168,10 @@ def main() -> None:
         stats = cs.analyse(cfg, args.bench, seeds, n_vals)
         print("saved:", cs.save_analysis(cfg, args.bench, stats))
         return cs.print_analysis(stats, args.bench, n_vals)
+    if args.experiment in ("extrap", "mesh"):
+        from . import scale_study as ss
+        fn = ss.run_extrapolation if args.experiment == "extrap" else ss.run_mesh
+        return print("saved:", fn(cfg, BENCHMARKS, args.bench) if args.experiment == "extrap" else fn(cfg, args.bench))
     if args.experiment == "ablation":
         from . import ablation as ab
         return print("saved:", ab.run(cfg, BENCHMARKS, prepare, args.bench))
