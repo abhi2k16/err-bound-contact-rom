@@ -52,8 +52,8 @@ class B3Config:
 class B4Config:
     """Benchmark B4: 3D elastic block, clamped on its lateral faces, resting on a rigid curved foundation (constant K)."""
 
-    n_xy: int = 12                      # elements per side in x and y; n_c = (n_xy - 1)^2 candidate bottom nodes
-    nz: int = 3                         # element layers
+    n_xy: int = 16                      # elements per side in x and y; n_c = (n_xy - 1)^2 candidate bottom nodes
+    nz: int = 4                         # element layers
     nu: float = 0.3                     # Poisson ratio (E = 1)
     clearance0: float = 0.05            # base clearance between the block bottom and the foundation
     curvature: float = 1.0              # foundation curvature kappa (clearance grows with the squared distance from the centre)
