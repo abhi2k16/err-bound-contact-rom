@@ -69,6 +69,7 @@ flowchart LR
 | **B1** | 60-node spring chain above a parabolic rigid obstacle | 1D | every second node |
 | **B2** | Membrane above an obstacle, partial contact patch | 2D | grid interface |
 | **B3** | Two elastic bodies (Hex8 solids), mesh sweep up to `N = 16 653` | 3D | body-to-body interface |
+| **B4** | Single elastic block clamped on its sides, resting on a rigid curved foundation; constant stiffness, moving contact patch (`N = 3375`, `n_c = 225`) | 3D | bottom face |
 
 ## Key findings
 
@@ -116,7 +117,8 @@ machine.
 | `python -m contact_rom e1 --bench b1` | Silent-failure audit, signed SVD against NMF | minutes |
 | `python -m contact_rom e3 --bench b1` (and `b2`) | Five-basis comparison, bound and indicator tables | minutes |
 | `python -m contact_rom e4 --bench b2` (and `b3`) | Break-even model against timings, mesh-size sweep | minutes (B3: 10 to 15) |
-| `python -m contact_rom e5 --bench b3` | Circuit breaker, in-range and extrapolated queries | long |
+| `python -m contact_rom e5 --bench b3 --kinds svd,nmf,cpg,gis,rid --r-dual 8,16 --tag b3_e5_all` | Circuit breaker, all five bases, in-range and extrapolated queries (the default is NMF and CPG, folder `b3_e5`) | about 15 min |
+| `python -m contact_rom e1` / `e3` / `extrap` / `calibration --bench b4` | Audit, five-basis comparison, out-of-range and calibration studies on the independent 3D block | minutes to 35 min |
 | `python -m contact_rom summary` | Scores the acceptance criteria on B1 and B2 | about a minute |
 | `python -m contact_rom robustness` | Criteria over five seeds, 40 and 200 validation queries | 15 to 30 min |
 | `python -m contact_rom calibration --bench b1` (and `b2`) | Calibration study, eight seeds, five threshold rules | long |
@@ -137,7 +139,8 @@ B3 can be run on smaller meshes for development with `--b3-n-xy` and `--b3-nz`.
 | `b1_e1`, `b2_all` | Silent-failure audits |
 | `b1_e3`, `b2_e3` | Five-basis audits: errors, bounds, indicators |
 | `b1_e4`, `b2_e4`, `b3_e4` | Break-even sweeps |
-| `b3_e5` | Circuit-breaker runs |
+| `b3_e5`, `b3_e5_all` | Circuit-breaker runs (`b3_e5_all`: five bases) |
+| `b4_e1`, `b4_e3` | Audits on the independent 3D benchmark B4 |
 | `calibration` | Per-seed audits and analyses of the calibration study |
 | `basis_comparison`, `ablation` | Matched-basis comparison and ablation |
 | `timing_study`, `scale_study`, `robustness` | Repeated timings, extrapolation and mesh-size studies, multi-seed criteria |
@@ -149,7 +152,7 @@ Re-running a command overwrites the matching folder.
 
 ```
 contact_rom/
-├── benchmarks.py, benchmark_3d.py      B1/B2 and B3 problem definitions
+├── benchmarks.py, benchmark_3d.py      B1/B2, B3 and B4 problem definitions
 ├── fom.py                              full-order contact solve and KKT checks
 ├── bases.py, dual_bases.py, repair.py  snapshots, POD, the five dual bases, rank repair
 ├── estimator.py                        error bound and admissibility indicators
