@@ -149,7 +149,7 @@ def run_summary(cfg: Config) -> None:
 def main() -> None:
     """CLI: ``python -m contact_rom [e1|e3|e4|e5|summary|all] [--bench b1|b2]``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "robustness", "all"])
+    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "robustness", "calibration", "all"])
     parser.add_argument("--bench", default="b1", choices=sorted(BENCHMARKS))
     parser.add_argument("--b3-n-xy", type=int, default=None, help="override B3 elements per side")
     parser.add_argument("--b3-nz", type=int, default=None, help="override B3 element layers per body")
@@ -161,6 +161,13 @@ def main() -> None:
         results = run_seeds(cfg, BENCHMARKS, prepare, (42, 43, 44, 45, 46), (40, 200))
         print("saved:", save_robustness(cfg, results))
         return summarize(results)
+    if args.experiment == "calibration":
+        from . import calibration_study as cs
+        seeds, n_vals = tuple(range(42, 50)), (10, 20, 40, 80, 200)
+        cs.generate(cfg, BENCHMARKS, prepare, args.bench, seeds, n_val_pool=200, n_test=100)
+        stats = cs.analyse(cfg, args.bench, seeds, n_vals)
+        print("saved:", cs.save_analysis(cfg, args.bench, stats))
+        return cs.print_analysis(stats, args.bench, n_vals)
     problem = BENCHMARKS[args.bench](cfg)
     print("metadata:", save_run_metadata(cfg, problem))
     print("Environment:", json.dumps(environment_info()))
