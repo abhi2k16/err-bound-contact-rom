@@ -149,7 +149,7 @@ def run_summary(cfg: Config) -> None:
 def main() -> None:
     """CLI: ``python -m contact_rom [e1|e3|e4|e5|summary|all] [--bench b1|b2]``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "robustness", "calibration", "all"])
+    parser.add_argument("experiment", nargs="?", default="all", choices=["e1", "e3", "e4", "e5", "summary", "robustness", "calibration", "basiscomp", "all"])
     parser.add_argument("--bench", default="b1", choices=sorted(BENCHMARKS))
     parser.add_argument("--b3-n-xy", type=int, default=None, help="override B3 elements per side")
     parser.add_argument("--b3-nz", type=int, default=None, help="override B3 element layers per body")
@@ -168,6 +168,9 @@ def main() -> None:
         stats = cs.analyse(cfg, args.bench, seeds, n_vals)
         print("saved:", cs.save_analysis(cfg, args.bench, stats))
         return cs.print_analysis(stats, args.bench, n_vals)
+    if args.experiment == "basiscomp":
+        from . import basis_comparison as bc
+        return print("saved:", bc.run(cfg, BENCHMARKS[args.bench](cfg), prepare, args.bench))
     problem = BENCHMARKS[args.bench](cfg)
     print("metadata:", save_run_metadata(cfg, problem))
     print("Environment:", json.dumps(environment_info()))
