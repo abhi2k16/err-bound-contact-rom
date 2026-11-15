@@ -74,6 +74,21 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple:
     return centre - half, centre + half
 
 
+def seed_bootstrap(per_seed: dict, n_boot: int = 2000, seed: int = 0) -> dict:
+    """95% percentile intervals for pooled recall and FPR, resampling whole seeds (the independent units)."""
+    counts = np.array(list(per_seed.values()), dtype=float)          # rows: seeds; columns tp, fn, fp, tn
+    if len(counts) == 0:
+        return {"recall": (float("nan"),) * 2, "fpr": (float("nan"),) * 2}
+    rng = np.random.default_rng(seed)
+    rec, fpr = [], []
+    for _ in range(n_boot):
+        c = counts[rng.integers(0, len(counts), len(counts))].sum(axis=0)
+        rec.append(c[0] / (c[0] + c[1]) if c[0] + c[1] else np.nan)
+        fpr.append(c[2] / (c[2] + c[3]) if c[2] + c[3] else np.nan)
+    q = lambda v: tuple(float(x) for x in np.nanpercentile(v, [2.5, 97.5])) if not np.all(np.isnan(v)) else (float("nan"),) * 2
+    return {"recall": q(rec), "fpr": q(fpr)}
+
+
 def threshold(rule: str, val: dict, key: str, cfg: Config, tau_rel: float) -> float:
     silent = silent_failure_mask(val, cfg)
     tau_min = float(cfg.tau_margin * val[key][silent].min()) if silent.any() else float("nan")
@@ -128,9 +143,9 @@ def analyse(cfg: Config, bench: str, seeds: tuple, n_vals: tuple, draws: int = 2
                                 continue
                             for f in ("tp", "fn", "fp", "tn"):
                                 slot[f] += c[f]
-                            ps = slot["per_seed"].setdefault(s, [0, 0])
-                            ps[0] += c["tp"]
-                            ps[1] += c["tp"] + c["fn"]
+                            ps = slot["per_seed"].setdefault(s, [0, 0, 0, 0])
+                            for i, f in enumerate(("tp", "fn", "fp", "tn")):
+                                ps[i] += c[f]
     stats = {}
     for key, a in acc.items():
         tp, fn, fp, tn = a["tp"], a["fn"], a["fp"], a["tn"]
@@ -140,7 +155,9 @@ def analyse(cfg: Config, bench: str, seeds: tuple, n_vals: tuple, draws: int = 2
             "fpr": 1 - spec if tn + fp else float("nan"), "fnr": 1 - rec if tp + fn else float("nan"),
             "precision": tp / (tp + fp) if tp + fp else float("nan"), "tp": tp, "fn": fn, "fp": fp, "tn": tn,
             "uncal_share": a["uncal"] / a["entries"], "pos_in_uncal": a["pos_uncal"],
-            "seed_recall": {s: (v[0] / v[1] if v[1] else float("nan")) for s, v in a["per_seed"].items()},
+            "seed_recall": {s: (v[0] / (v[0] + v[1]) if v[0] + v[1] else float("nan")) for s, v in a["per_seed"].items()},
+            "seed_counts": a["per_seed"],
+            "boot": seed_bootstrap(a["per_seed"]),
         }
     return stats
 
