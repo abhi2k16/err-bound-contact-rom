@@ -153,8 +153,15 @@ def main() -> None:
     parser.add_argument("--bench", default="b1", choices=sorted(BENCHMARKS))
     parser.add_argument("--b3-n-xy", type=int, default=None, help="override B3 elements per side")
     parser.add_argument("--b3-nz", type=int, default=None, help="override B3 element layers per body")
+    parser.add_argument("--kinds", default=None, help="E5 only: comma-separated dual bases (default nmf,cpg)")
+    parser.add_argument("--r-dual", default=None, help="E5 only: comma-separated dual dimensions (default 8,16)")
+    parser.add_argument("--tag", default=None, help="output folder name under results/ (default <bench>_<experiment>)")
     args = parser.parse_args()
-    cfg = override_b3(Config(run_id=f"{args.bench}_{args.experiment}"), args.b3_n_xy, args.b3_nz)
+    cfg = override_b3(Config(run_id=args.tag or f"{args.bench}_{args.experiment}"), args.b3_n_xy, args.b3_nz)
+    if args.kinds:
+        cfg = replace(cfg, e5_kinds=tuple(args.kinds.split(",")))
+    if args.r_dual:
+        cfg = replace(cfg, e5_r_dual_list=tuple(int(v) for v in args.r_dual.split(",")))
     if args.experiment == "summary":
         return run_summary(cfg)
     if args.experiment == "robustness":

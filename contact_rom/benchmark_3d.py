@@ -148,8 +148,16 @@ def build_b3(cfg: B3Config) -> ContactProblem:
             return lo + rng.random((n_samples, 3)) * (hi - lo)
         return sample
 
+    # element connectivity in the free-dof numbering (constrained dofs dropped, so rows have different lengths);
+    # only the RID dual basis uses it
+    elem_dofs = []
+    for body, nz in ((0, cfg.nz_up), (1, cfg.nz_low)):
+        conn = body_connectivity(layout, body, nz)
+        dofs = pos[(3 * conn[:, :, None] + np.arange(3)[None, None, :]).reshape(len(conn), 24)]
+        elem_dofs.extend(row[row >= 0] for row in dofs)
+
     in_ranges = (cfg.ratio_range, cfg.load_range, cfg.delta_range)
     load_hi = cfg.load_range[1]
     out_ranges = (cfg.ratio_range, (cfg.extrap_load[0] * load_hi, cfg.extrap_load[1] * load_hi), cfg.delta_range)
     return ContactProblem("B3", free.size, rows.size, K_mat, f_vec, lambda mu: B_const, c_vec, sampler(in_ranges),
-                          elem_dofs=None, k_varies=True, sample_mu_extrap=sampler(out_ranges))
+                          elem_dofs=elem_dofs, k_varies=True, sample_mu_extrap=sampler(out_ranges))
