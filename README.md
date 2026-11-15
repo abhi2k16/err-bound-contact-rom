@@ -5,7 +5,7 @@ Lagrange-Multiplier Reduced-Order Contact Models"**.
 
 Reduced-order models (ROMs) of frictionless unilateral contact can satisfy the reduced KKT conditions to machine
 precision and still be wrong: a signed (SVD) dual basis lets the reduced multiplier go negative once it is lifted to the
-full contact set. This repository contains the `contact_rom` Python package and the scripts that reproduce the numerical
+full contact set. This repository contains the `contact_rom` Python package and the saved outputs behind the numerical
 results of the manuscript:
 
 - an a posteriori **error bound** for the lifted reduced solution (Theorem 1 of the manuscript) and cheap online
@@ -24,10 +24,9 @@ benchmark screening can cost more than it saves.
 
 ## What is in this repository
 
-Besides the code, the repository holds the manuscript source (`manuscript_master_v2.tex`, `references.bib`) and its
-compiled PDF, the generated `figures/` and `tables/`, and the saved experiment outputs in `results/` (NumPy `.npz`,
-pickle and JSON files, about 14 MB). Internal working notes, build files and backups are not included.
-All figures and tables can be regenerated from `results/` with the scripts below.
+The repository contains the `contact_rom` package, the saved experiment outputs in `results/` (NumPy `.npz`, pickle and
+JSON files, about 14 MB) and this README. The manuscript, its figure and table generators, and working notes are not
+part of the repository. Every number in the results can be regenerated with the commands below.
 
 ```
 contact_rom/            package
@@ -44,20 +43,12 @@ contact_rom/            package
                         break-even sweeps, mesh/extrapolation studies, ablation, matched-basis comparison
   circuit_breaker.py    screening with full-order fallback
   run.py                command-line entry point (python -m contact_rom ...)
-scripts/
-  figures/              figure generators: make_figures, make_calibration_figure, make_threshold_figures,
-                        make_estimator_figure, make_basis_comparison, make_geometry_figures
-  tables/               table generators: make_ablation_table, make_effdim_table, make_scale_tables,
-                        make_timing_table, make_memory_table
-  build/compile_latex.py  builds the manuscript PDF with latexmk
-manuscript_master_v2.*  manuscript source and PDF; references.bib
-figures/, tables/      generated figures (PDF) and LaTeX table fragments
-results/               saved experiment outputs
+results/                saved outputs, one folder per experiment
 ```
 
 ## Setup
 
-Python 3 with `numpy`, `scipy` and `matplotlib` is needed (`pyvista` only for the geometry figures), plus two packages
+Python 3 with `numpy`, `scipy` and `matplotlib` is needed, plus two packages
 from the authors' computation suite that are **not on PyPI and not included here**:
 
 - `fea_engine` (1.0.1): finite-element assembly and the exact contact solvers;
@@ -68,14 +59,14 @@ The reported results were produced with Python 3.14.3, NumPy 2.5.4 and SciPy 1.1
 
 ```
 python -m venv .venv
-.venv\Scripts\pip install numpy scipy matplotlib pyvista                      # Windows; use .venv/bin/pip elsewhere
+.venv\Scripts\pip install numpy scipy matplotlib                      # Windows; use .venv/bin/pip elsewhere
 .venv\Scripts\pip install -e <path-to>/computation-suite/fea_engine -e <path-to>/computation-suite/rom_engine
 ```
 
 ## Running the experiments
 
 Run all commands from the repository root. `python -m contact_rom` pins BLAS and OpenMP to one thread, which the timing
-experiments require. Outputs go to `results/<benchmark>_<experiment>/`. Timing experiments must run alone on the
+experiments require. Outputs go to `results/<benchmark>_<experiment>/` (or a study-specific folder). Timing experiments must run alone on the
 machine, one process at a time. Runtimes are rough values from one Windows machine.
 
 | Command | What it does | Runtime |
@@ -95,23 +86,13 @@ machine, one process at a time. Runtimes are rough values from one Windows machi
 
 B3 can be run on smaller meshes for development with `--b3-n-xy` and `--b3-nz`.
 
-## Reproducing figures and tables
+## Saved results
 
-Run the experiments first, then the generators, always from the repository root and as modules (vector PDFs go to `figures/`, LaTeX fragments to `tables/`):
-
-```
-python -m scripts.figures.make_figures              # silent failure, bound, components, break-even, circuit breaker
-python -m scripts.figures.make_calibration_figure   # calibration figure and tables
-python -m scripts.figures.make_threshold_figures    # threshold sensitivity and trade-off
-python -m scripts.figures.make_estimator_figure     # admissibility indicator against true error
-python -m scripts.figures.make_basis_comparison     # matched-basis tables and cost-accuracy figure
-python -m scripts.tables.make_effdim_table         # nominal vs effective dual dimension
-python -m scripts.tables.make_timing_table          # repeated-timing table
-python -m scripts.tables.make_ablation_table
-python -m scripts.tables.make_scale_tables         # extrapolation and mesh-size tables
-python -m scripts.tables.make_memory_table         # stored entries: sparse factorization vs reduced dense model
-python -m scripts.figures.make_geometry_figures     # benchmark geometry; needs pyvista
-```
+`results/` holds the outputs the manuscript analyses were computed from: `b1_e1`, `b1_e3`, `b1_e4`, `b2_all`, `b2_e3`, `b2_e4`,
+`b3_e4`, `b3_e5` (audits and break-even sweeps), `calibration` (per-seed audits and analyses), `basis_comparison`,
+`timing_study`, `ablation`, `scale_study` (extrapolation and mesh-size studies), `robustness` and `memory_study`
+(stored entries of the sparse factorization against the reduced dense model). Each run also writes its configuration and
+library versions to `config.json`. Re-running a command overwrites the matching folder.
 
 ## Notation and conventions
 
