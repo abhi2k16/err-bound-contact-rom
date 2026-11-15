@@ -1,6 +1,6 @@
 """Calibration-study figure and table from ``results/calibration/analysis_{b1,b2}.pkl``.
 
-Run ``python make_calibration_figure.py`` after ``python -m contact_rom calibration --bench b1`` (and b2).
+Run ``python -m scripts.figures.make_calibration_figure`` after ``python -m contact_rom calibration --bench b1`` (and b2).
 Writes ``figures/fig_calibration.pdf`` and ``tables/calibration_table.tex`` (a ``tabular`` fragment).
 Intervals are 95% percentile bootstrap intervals over the eight seeds (the independent units).
 """
@@ -16,7 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-import make_figures as mf   # shared style and palette
+from scripts.figures import make_figures as mf   # shared style and palette
 
 RES = Path("results") / "calibration"
 KINDS = ("nmf", "cpg", "gis", "rid")        # signed SVD is detected almost always and has no accurate queries

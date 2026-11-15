@@ -1,6 +1,6 @@
 """Figure and tables for the matched dual-basis comparison from ``results/basis_comparison/*.json``.
 
-Run ``python make_basis_comparison.py`` after ``python -m contact_rom basiscomp --bench b1`` (and b2).
+Run ``python -m scripts.figures.make_basis_comparison`` after ``python -m contact_rom basiscomp --bench b1`` (and b2).
 Writes ``figures/fig_basis_cost.pdf``, ``tables/basis_matched_dim.tex`` and ``tables/basis_matched_acc.tex``.
 """
 
@@ -13,7 +13,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-import make_figures as mf
+from scripts.figures import make_figures as mf
 from contact_rom import basis_comparison as bc
 from contact_rom.config import Config
 

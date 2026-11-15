@@ -1,6 +1,6 @@
 """Geometry and field figures built with the suite's visualization tools (PyVista via ``fea_engine.visualization``).
 
-Run ``python make_geometry_figures.py``. Outputs go to ``figures/``:
+Run ``python -m scripts.figures.make_geometry_figures``. Outputs go to ``figures/``:
   fig_geometry.pdf    B1 chain, B2 membrane, B3 two-body mesh with loads, supports and active contact
   fig_b3_rom.pdf      B3 full-order vs reduced displacement and error, NMF and SVD dual bases (``compare_fields``)
   fig_multiplier.pdf  B2 contact tractions: full order vs lifted reduced multipliers (adhesive values visible)

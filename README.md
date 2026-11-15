@@ -44,8 +44,12 @@ contact_rom/            package
                         break-even sweeps, mesh/extrapolation studies, ablation, matched-basis comparison
   circuit_breaker.py    screening with full-order fallback
   run.py                command-line entry point (python -m contact_rom ...)
-make_*.py               figure and table generators for the manuscript
-compile_latex.py        helper that builds the manuscript PDF with latexmk
+scripts/
+  figures/              figure generators: make_figures, make_calibration_figure, make_threshold_figures,
+                        make_estimator_figure, make_basis_comparison, make_geometry_figures
+  tables/               table generators: make_ablation_table, make_effdim_table, make_scale_tables,
+                        make_timing_table, make_memory_table
+  build/compile_latex.py  builds the manuscript PDF with latexmk
 manuscript_master_v2.*  manuscript source and PDF; references.bib
 figures/, tables/      generated figures (PDF) and LaTeX table fragments
 results/               saved experiment outputs
@@ -93,20 +97,20 @@ B3 can be run on smaller meshes for development with `--b3-n-xy` and `--b3-nz`.
 
 ## Reproducing figures and tables
 
-Run the experiments first, then the generators (vector PDFs go to `figures/`, LaTeX fragments to `tables/`):
+Run the experiments first, then the generators, always from the repository root and as modules (vector PDFs go to `figures/`, LaTeX fragments to `tables/`):
 
 ```
-python make_figures.py              # silent failure, bound, components, break-even, circuit breaker
-python make_calibration_figure.py   # calibration figure and tables
-python make_threshold_figures.py    # threshold sensitivity and trade-off
-python make_estimator_figure.py     # admissibility indicator against true error
-python make_basis_comparison.py     # matched-basis tables and cost-accuracy figure
-python make_effdim_table.py         # nominal vs effective dual dimension
-python make_timing_table.py          # repeated-timing table
-python make_ablation_table.py
-python make_scale_tables.py         # extrapolation and mesh-size tables
-python make_memory_table.py         # stored entries: sparse factorization vs reduced dense model
-python make_geometry_figures.py     # benchmark geometry; needs pyvista
+python -m scripts.figures.make_figures              # silent failure, bound, components, break-even, circuit breaker
+python -m scripts.figures.make_calibration_figure   # calibration figure and tables
+python -m scripts.figures.make_threshold_figures    # threshold sensitivity and trade-off
+python -m scripts.figures.make_estimator_figure     # admissibility indicator against true error
+python -m scripts.figures.make_basis_comparison     # matched-basis tables and cost-accuracy figure
+python -m scripts.tables.make_effdim_table         # nominal vs effective dual dimension
+python -m scripts.tables.make_timing_table          # repeated-timing table
+python -m scripts.tables.make_ablation_table
+python -m scripts.tables.make_scale_tables         # extrapolation and mesh-size tables
+python -m scripts.tables.make_memory_table         # stored entries: sparse factorization vs reduced dense model
+python -m scripts.figures.make_geometry_figures     # benchmark geometry; needs pyvista
 ```
 
 ## Notation and conventions

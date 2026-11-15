@@ -1,6 +1,6 @@
 """Publication figures for the manuscript, generated from the saved results in ``results/``.
 
-Run ``python make_figures.py``; vector PDFs are written to ``figures/``. Palette: first three slots of the
+Run ``python -m scripts.figures.make_figures``; vector PDFs are written to ``figures/``. Palette: first three slots of the
 validated categorical palette (blue, orange, aqua); multi-basis plots use small multiples, not extra hues.
 """
 

@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 def main() -> int:
-    default_source = Path(__file__).resolve().with_name("manuscript_master.tex")
+    default_source = Path(__file__).resolve().parents[2] / "manuscript_master_v2.tex"
     parser = argparse.ArgumentParser(
         description="Compile a LaTeX source file to PDF using latexmk."
     )
@@ -17,7 +17,7 @@ def main() -> int:
         nargs="?",
         type=Path,
         default=default_source,
-        help="LaTeX source file (default: manuscript_master.tex beside this script)",
+        help="LaTeX source file (default: manuscript_master_v2.tex in the repository root)",
     )
     args = parser.parse_args()
     source = args.source.expanduser().resolve()

@@ -16,7 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-import make_figures as mf
+from scripts.figures import make_figures as mf
 from contact_rom import calibration_study as cs
 from contact_rom.config import Config
 

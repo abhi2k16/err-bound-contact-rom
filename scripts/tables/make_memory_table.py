@@ -1,7 +1,7 @@
 """Storage comparison, full-order sparse factorization vs reduced dense model -> ``results/memory_study/memory_{b2,b3}.json``
 and ``tables/memory_table.tex``.
 
-Run ``python make_memory_table.py``. For every mesh size of the break-even sweeps (B2 membrane, B3 two-body) the
+Run ``python -m scripts.tables.make_memory_table``. For every mesh size of the break-even sweeps (B2 membrane, B3 two-body) the
 stiffness matrix is factored with the same SuperLU call as in the timing study (``scipy.sparse.linalg.splu``,
 default COLAMD ordering) and the stored entries of L and U are counted. Reduced sizes ``r_u`` come from the timing
 study (primal POD dimension plus repair vectors); ``r_lambda = cfg.e4_r_dual`` is the dual dimension used there.

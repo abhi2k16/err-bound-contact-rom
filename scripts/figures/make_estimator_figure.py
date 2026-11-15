@@ -1,6 +1,6 @@
 """Estimator-performance figure: admissibility indicator eta_adm vs true energy-norm error.
 
-Run ``python make_estimator_figure.py`` (needs results/b1_e3, results/b2_e3). Writes ``figures/fig_estimator.pdf``.
+Run ``python -m scripts.figures.make_estimator_figure`` (needs results/b1_e3, results/b2_e3). Writes ``figures/fig_estimator.pdf``.
 Silent failure = reduced KKT residual < 1e-12 and relative energy error > 5% (same definition as elsewhere).
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-import make_figures as mf
+from scripts.figures import make_figures as mf
 
 FLOOR = 1e-9   # indicator values of exactly zero are drawn at the axis floor
 
