@@ -19,6 +19,9 @@
   "svd|test": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0068726074878744,
    "need_p99": 1.0010616585470489,
    "valid": {
@@ -49,6 +52,9 @@
   "nmf|test": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0068726074878749,
    "need_p99": 1.0010616585470493,
    "valid": {
@@ -79,6 +85,9 @@
   "cpg|test": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0068726074878749,
    "need_p99": 1.001061658547049,
    "valid": {
@@ -109,6 +118,9 @@
   "gis|test": {
    "n": 200,
    "gap_zero": 2,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0068726074878749,
    "need_p99": 1.001061658547049,
    "valid": {
@@ -139,6 +151,9 @@
   "rid|test": {
    "n": 200,
    "gap_zero": 2,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0068726074878747,
    "need_p99": 1.001067338752445,
    "valid": {
@@ -169,6 +184,9 @@
   "svd|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.105842849762926,
    "need_p99": 2.079509623053883,
    "valid": {
@@ -199,6 +217,9 @@
   "nmf|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.1058428497629262,
    "need_p99": 2.079509623053883,
    "valid": {
@@ -229,6 +250,9 @@
   "cpg|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.105842849762926,
    "need_p99": 2.079509623053882,
    "valid": {
@@ -259,6 +283,9 @@
   "gis|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.105842849762925,
    "need_p99": 2.079509623053883,
    "valid": {
@@ -289,6 +316,9 @@
   "rid|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.1058428497629267,
    "need_p99": 2.079509623053882,
    "valid": {
@@ -319,6 +349,9 @@
   "svd|centre shift": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 0.9138168237996146,
    "need_p99": 0.8947150437940101,
    "valid": {
@@ -349,6 +382,9 @@
   "nmf|centre shift": {
    "n": 200,
    "gap_zero": 8,
+   "strict_invalid": 1,
+   "shortfall_max": 2.220446049250313e-15,
+   "n_above_tol": 0,
    "need_max": 1.0,
    "need_p99": 1.0,
    "valid": {
@@ -379,6 +415,9 @@
   "cpg|centre shift": {
    "n": 200,
    "gap_zero": 8,
+   "strict_invalid": 1,
+   "shortfall_max": 2.220446049250313e-15,
+   "n_above_tol": 0,
    "need_max": 1.0,
    "need_p99": 1.0,
    "valid": {
@@ -409,6 +448,9 @@
   "gis|centre shift": {
    "n": 200,
    "gap_zero": 8,
+   "strict_invalid": 2,
+   "shortfall_max": 1.1102230246251565e-15,
+   "n_above_tol": 0,
    "need_max": 1.0,
    "need_p99": 1.0,
    "valid": {
@@ -439,6 +481,9 @@
   "rid|centre shift": {
    "n": 200,
    "gap_zero": 11,
+   "strict_invalid": 6,
+   "shortfall_max": 2.5202062658991053e-13,
+   "n_above_tol": 0,
    "need_max": 1.0,
    "need_p99": 1.0,
    "valid": {

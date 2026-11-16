@@ -19,6 +19,9 @@
   "svd|test": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.07104382916548,
    "need_p99": 0.9957003517222889,
    "valid": {
@@ -49,6 +52,9 @@
   "nmf|test": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0710438291654802,
    "need_p99": 0.9957003517222891,
    "valid": {
@@ -79,6 +85,9 @@
   "cpg|test": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.07104382916548,
    "need_p99": 0.9957003517222888,
    "valid": {
@@ -109,6 +118,9 @@
   "gis|test": {
    "n": 200,
    "gap_zero": 5,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0710438291654802,
    "need_p99": 1.0,
    "valid": {
@@ -139,6 +151,9 @@
   "rid|test": {
    "n": 200,
    "gap_zero": 6,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.071043829165479,
    "need_p99": 1.0,
    "valid": {
@@ -169,6 +184,9 @@
   "svd|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 3,
+   "shortfall_max": 0.01272699877144945,
+   "n_above_tol": 3,
    "need_max": 2.531415574979688,
    "need_p99": 2.4771064617449188,
    "valid": {
@@ -199,6 +217,9 @@
   "nmf|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.531415574979688,
    "need_p99": 2.4771064617449188,
    "valid": {
@@ -229,6 +250,9 @@
   "cpg|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.531415574979688,
    "need_p99": 2.4771064617449188,
    "valid": {
@@ -259,6 +283,9 @@
   "gis|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.531415574979688,
    "need_p99": 2.477106461744919,
    "valid": {
@@ -289,6 +316,9 @@
   "rid|load": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 2.531415574979686,
    "need_p99": 2.4771064617451097,
    "valid": {
@@ -319,6 +349,9 @@
   "svd|geometry": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 0.8189474935152286,
    "need_p99": 0.8094639416640956,
    "valid": {
@@ -349,6 +382,9 @@
   "nmf|geometry": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 0.8189474935152283,
    "need_p99": 0.8094639416640955,
    "valid": {
@@ -379,6 +415,9 @@
   "cpg|geometry": {
    "n": 200,
    "gap_zero": 0,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 0.8189474935152284,
    "need_p99": 0.8094639416640957,
    "valid": {
@@ -409,6 +448,9 @@
   "gis|geometry": {
    "n": 200,
    "gap_zero": 12,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0,
    "need_p99": 1.0,
    "valid": {
@@ -439,6 +481,9 @@
   "rid|geometry": {
    "n": 200,
    "gap_zero": 5,
+   "strict_invalid": 0,
+   "shortfall_max": 0.0,
+   "n_above_tol": 0,
    "need_max": 1.0,
    "need_p99": 1.0,
    "valid": {
