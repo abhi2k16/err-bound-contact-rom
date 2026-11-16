@@ -155,11 +155,14 @@ def main() -> None:
     parser.add_argument("--b3-nz", type=int, default=None, help="override B3 element layers per body")
     parser.add_argument("--kinds", default=None, help="E5 only: comma-separated dual bases (default nmf,cpg)")
     parser.add_argument("--r-dual", default=None, help="E5 only: comma-separated dual dimensions (default 8,16)")
+    parser.add_argument("--e5-n", type=int, default=None, help="E5 only: queries per set (val, test, extrap; default 25)")
     parser.add_argument("--tag", default=None, help="output folder name under results/ (default <bench>_<experiment>)")
     args = parser.parse_args()
     cfg = override_b3(Config(run_id=args.tag or f"{args.bench}_{args.experiment}"), args.b3_n_xy, args.b3_nz)
     if args.kinds:
         cfg = replace(cfg, e5_kinds=tuple(args.kinds.split(",")))
+    if args.e5_n:
+        cfg = replace(cfg, e5_n_val=args.e5_n, e5_n_test=args.e5_n, e5_n_extrap=args.e5_n)
     if args.r_dual:
         cfg = replace(cfg, e5_r_dual_list=tuple(int(v) for v in args.r_dual.split(",")))
     if args.experiment == "summary":
