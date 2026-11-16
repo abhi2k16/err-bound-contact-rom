@@ -117,33 +117,61 @@ def fig_breakeven() -> None:
 
 
 def fig_breaker() -> None:
-    """E5 circuit breaker: fallback share and speedup, in-range vs extrapolated queries (B3)."""
+    """E5 admissibility screening (B3): fallback share, speedup and accepted-query error, in range vs extrapolated.
+
+    Filled marks: r_lambda = 16; open markers: r_lambda = 8. Each point is 25 queries (shares are multiples of 4%).
+    """
     d = np.load(RES / "b3_e5_all" / "e5_circuit_breaker.npz")
-    configs = [(k, 16) for k in KINDS]
-    labels = [LABEL[k] for k, r in configs]
-    x = np.arange(len(configs))
-    fig, axes = plt.subplots(1, 2, figsize=(6.3, 2.2))
-    for ax, metric, ylabel in zip(axes, ("fallback", "speedup"), ("share sent to full-order solver", "speedup over full-order solve")):
-        for off, name, color in ((-0.18, "test", BLUE), (0.18, "extrap", ORANGE)):
-            vals = [float(d[f"{k}_{r}_eta_adm_{name}_{metric}"]) for k, r in configs]
-            label = "in range" if name == "test" else "extrapolated"
-            fmt = (lambda v: f"{100 * v:.0f}") if metric == "fallback" else (lambda v: f"{v:.1f}x")
-            if metric == "fallback":                      # share: bars anchored at zero
-                ax.bar(x + off, vals, 0.34, color=color, label=label)
-            else:                                         # log-scale ratio: dots, not bars
-                ax.scatter(x + off, vals, s=22, color=color, label=label, zorder=3)
-            for xi, v in zip(x + off, vals):
-                ax.text(xi, v * (1.0 if metric == "fallback" else 1.18), fmt(v), ha="center", va="bottom",
-                        fontsize=6.5, color=INK)
-        ax.set_xticks(x, labels, fontsize=7)
-        ax.set_xlabel(r"dual basis ($r_\lambda=16$)", fontsize=7)
-        ax.set_ylabel(ylabel + (" (% on bars)" if metric == "fallback" else ""))
-        ax.grid(axis="x", visible=False)
-    axes[0].set_ylim(0, 1.18)
-    axes[1].set(yscale="log", ylim=(0.5, 45))
+    x = np.arange(len(KINDS))
+    fig, axes = plt.subplots(1, 3, figsize=(6.9, 2.4))
+    regimes = (("test", "in range", BLUE, -0.18), ("extrap", "extrapolated", ORANGE, 0.18))
+
+    def get(k, r, name, key):
+        return float(d[f"{k}_{r}_eta_adm_{name}_{key}"])
+
+    for name, _, color, off in regimes:
+        # (a) fallback share: bars at r=16, open marker at r=8
+        v16 = [100 * get(k, 16, name, "fallback") for k in KINDS]
+        v8 = [100 * get(k, 8, name, "fallback") for k in KINDS]
+        axes[0].bar(x + off, v16, 0.34, color=color)
+        axes[0].scatter(x + off, v8, s=16, facecolor="white", edgecolor=INK, linewidths=0.7, zorder=4)
+        for xi, v in zip(x + off, v16):
+            if v < 99:   # bars at 100 % are read off the axis; labels there collide
+                axes[0].text(xi, v + 6, f"{v:.0f}", ha="center", va="bottom", fontsize=6, color=INK)
+        # (b) speedup
+        s16 = [get(k, 16, name, "speedup") for k in KINDS]
+        s8 = [get(k, 8, name, "speedup") for k in KINDS]
+        axes[1].scatter(x + off, s8, s=30, facecolor="white", edgecolor=color, linewidths=0.9, zorder=3)
+        axes[1].scatter(x + off, s16, s=12, color=color, zorder=4)
+        for xi, v in zip(x + off, s16):
+            if v > 1.5:
+                axes[1].text(xi, v * 1.2, f"{v:.1f}x", ha="center", va="bottom", fontsize=6.5, color=INK)
+        # (c) largest true error among accepted queries (blank where nothing was accepted)
+        for r, filled in ((16, True), (8, False)):
+            e = np.array([100 * get(k, r, name, "max_err_accepted") for k in KINDS])
+            ok = ~np.isnan(e)
+            axes[2].scatter((x + off)[ok], e[ok], s=12 if filled else 30, zorder=4 if filled else 3,
+                            facecolor=color if filled else "white", edgecolor=color, linewidths=0.9)
+
+    axes[0].set(ylim=(0, 118), ylabel="queries sent to full-order solver (%)", title="(a) fallback share")
+    axes[1].set(yscale="log", ylim=(0.6, 45), ylabel=r"net speedup $S_{net}$", title="(b) speedup")
     axes[1].axhline(1, color=MUTED, lw=0.7)
-    handles, names = axes[0].get_legend_handles_labels()
-    fig.legend(handles, names, loc="upper center", ncol=2, fontsize=7, bbox_to_anchor=(0.5, 1.04))
+    axes[2].set(yscale="log", ylim=(1, 20), ylabel="max true error of accepted queries (%)", title="(c) accepted-query error")
+    axes[2].axhline(100 * TOL_ERR, color=MUTED, lw=0.7, ls="--")
+    axes[2].text(4.45, 100 * TOL_ERR * 1.06, "5% tolerance", fontsize=6.5, color=MUTED, ha="right", va="bottom")
+    axes[2].text(4.45, 1.12, "no mark: all queries re-solved", fontsize=6, color=MUTED, ha="right", va="bottom")
+    axes[2].set_yticks([1, 2, 5, 10, 20], ["1", "2", "5", "10", "20"])
+    for ax in axes:
+        ax.set_xticks(x, [LABEL[k] for k in KINDS], fontsize=7)
+        ax.set_xlabel("dual basis", fontsize=7)
+        ax.grid(axis="x", visible=False)
+        ax.title.set_fontsize(8)
+    handles = [plt.Rectangle((0, 0), 1, 1, color=c) for _, _, c, _ in regimes]
+    handles += [plt.Line2D([], [], marker="o", ls="", mfc=INK, mec=INK, ms=4),
+                plt.Line2D([], [], marker="o", ls="", mfc="white", mec=INK, ms=4)]
+    fig.legend(handles, ["in range", "extrapolated", r"$r_\lambda=16$", r"$r_\lambda=8$"], loc="upper center", ncol=4,
+               fontsize=7, bbox_to_anchor=(0.5, 1.07))
+    fig.tight_layout()
     save(fig, "fig_breaker")
 
 
