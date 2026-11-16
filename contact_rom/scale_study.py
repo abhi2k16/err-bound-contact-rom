@@ -62,7 +62,7 @@ def pooled_set(cfg: Config, entries: list, val_entries: list, taus: list) -> dic
     return {"err_med": float(np.median(err)), "share_above_5pct": float(np.mean(err > cfg.err_silent)),
             "silent_share": float(silent.mean()),
             "bound1_valid": float(np.mean(np.concatenate([e["bound1"] >= e["err_abs"] * (1 - 1e-8) for e in entries]))),
-            "bound_Clam_valid": float(np.mean(np.concatenate([e["bound_Clam"] >= e["err_abs"] for e in entries]))),
+            "bound_Clam_valid": float(np.mean(np.concatenate([e["bound_Clam"] >= e["err_abs"] * (1 - 1e-8) for e in entries]))),
             "n": int(err.size), "n_silent": int(silent.sum()), "missed": int((silent & ~flagged).sum()),
             "false_alarm": float(flagged[good].mean()) if good.any() else float("nan"),
             "flagged_share": float(flagged.mean())}
