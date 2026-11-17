@@ -120,9 +120,9 @@ def fig_breaker() -> None:
     """E5 admissibility screening (B3): fallback share, speedup and accepted-query error, in range vs extrapolated.
 
     Filled marks: r_lambda = 16; open markers: r_lambda = 8. NMF and CPG come from the 100-query run (``b3_e5_n100``);
-    SVD, gIS and RID, which fall back on nearly every query, from the 25-query run (``b3_e5_all``).
+    SVD, gIS and RID, which fall back on every query, from the 100-query run ``b3_e5_n100_rest``.
     """
-    d25 = np.load(RES / "b3_e5_all" / "e5_circuit_breaker.npz")
+    d25 = np.load(RES / "b3_e5_n100_rest" / "e5_circuit_breaker.npz")
     d100 = np.load(RES / "b3_e5_n100" / "e5_circuit_breaker.npz")
     x = np.arange(len(KINDS))
     fig, axes = plt.subplots(1, 3, figsize=(6.9, 2.4))
@@ -173,7 +173,7 @@ def fig_breaker() -> None:
                 plt.Line2D([], [], marker="o", ls="", mfc="white", mec=INK, ms=4)]
     fig.legend(handles, ["in range", "extrapolated", r"$r_\lambda=16$", r"$r_\lambda=8$"], loc="upper center", ncol=4,
                fontsize=7, bbox_to_anchor=(0.5, 1.07))
-    axes[0].text(0.02, 0.97, "n = 25 (SVD, gIS, RID); 100 (NMF, CPG)", transform=axes[0].transAxes, fontsize=5.5,
+    axes[0].text(0.02, 0.97, "n = 100 queries per set", transform=axes[0].transAxes, fontsize=5.5,
                  color=MUTED, va="top")
     fig.tight_layout()
     save(fig, "fig_breaker")
