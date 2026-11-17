@@ -133,3 +133,46 @@ def build_b2(cfg_b2: B2Config) -> ContactProblem:
 
     return ContactProblem("B2", n_grid**2, B_const.shape[0], lambda mu: K_const, f_vec, lambda mu: B_const,
                           c_vec, sample_mu, elem_dofs=membrane_cells(n_grid))
+
+
+def interpolated_constraints(n_grid: int, n_pts: int, lo: float, hi: float) -> tuple[sp.csr_matrix, np.ndarray]:
+    """Constraint rows on a point grid that does not coincide with the nodes (bilinear interpolation of the displacement).
+
+    The ``n_pts x n_pts`` points span ``[lo, hi]^2``; each row of ``B`` holds the four bilinear weights of the node cell
+    that contains the point, so ``B`` is not a selection matrix, rows overlap on shared nodes, and ``n_c`` differs
+    from the node count of the contact region. Returns ``(B, point coordinates (n_c, 2))``.
+    """
+    axis = np.linspace(lo, hi, n_pts)
+    pts = np.array([(x, y) for x in axis for y in axis])
+    s = pts * (n_grid + 1.0) - 1.0                      # node i sits at (i + 1) / (n_grid + 1)
+    i0 = np.clip(np.floor(s).astype(int), 0, n_grid - 2)
+    frac = s - i0
+    rows, cols, vals = [], [], []
+    for r, ((i, j), (fx, fy)) in enumerate(zip(i0, frac)):
+        for di, dj, w in ((0, 0, (1 - fx) * (1 - fy)), (0, 1, (1 - fx) * fy), (1, 0, fx * (1 - fy)), (1, 1, fx * fy)):
+            rows.append(r); cols.append((i + di) * n_grid + (j + dj)); vals.append(w)
+    return sp.csr_matrix((vals, (rows, cols)), shape=(len(pts), n_grid**2)), pts
+
+
+def build_b5(cfg_b2: B2Config, n_pts: int = 11) -> ContactProblem:
+    """Benchmark B5: the B2 membrane with non-node-aligned (interpolated) constraint rows, ``n_c = n_pts**2 = 121``."""
+    n_grid = cfg_b2.n_grid
+    K_const = membrane_stiffness(n_grid)
+    B_const, xy_contact = interpolated_constraints(n_grid, n_pts, 0.30, 0.70)
+    xy_all = (np.array([(i, j) for i in range(n_grid) for j in range(n_grid)], dtype=float) + 1.0) / (n_grid + 1.0)
+    bump = np.exp(-((xy_all[:, 0] - 0.5) ** 2 + (xy_all[:, 1] - 0.5) ** 2) / 0.08)
+
+    def f_vec(mu: np.ndarray) -> np.ndarray:
+        return float(mu[0]) * bump
+
+    def c_vec(mu: np.ndarray) -> np.ndarray:
+        dist2 = (xy_contact[:, 0] - mu[1]) ** 2 + (xy_contact[:, 1] - mu[2]) ** 2
+        return cfg_b2.clearance0 + cfg_b2.curvature * dist2
+
+    def sample_mu(rng: np.random.Generator, n_samples: int) -> np.ndarray:
+        lo = np.array([cfg_b2.load_range[0], cfg_b2.center_range[0], cfg_b2.center_range[0]])
+        hi = np.array([cfg_b2.load_range[1], cfg_b2.center_range[1], cfg_b2.center_range[1]])
+        return lo + rng.random((n_samples, 3)) * (hi - lo)
+
+    return ContactProblem("B5", n_grid**2, B_const.shape[0], lambda mu: K_const, f_vec, lambda mu: B_const,
+                          c_vec, sample_mu, elem_dofs=membrane_cells(n_grid))
