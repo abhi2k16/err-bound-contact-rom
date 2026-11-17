@@ -61,9 +61,17 @@ def flops_projection(sizes: ProblemSizes, red: ReducedSizes, c_proj: float, k_va
 
 
 def flops_rom(sizes: ProblemSizes, red: ReducedSizes, c_proj: float, k_varies: bool) -> float:
-    """Eq. (17): projection + dense solves + reduced active-set + online eta_adm check."""
+    """Eq. (17): projection + dense solves + reduced active-set + online eta_adm check.
+
+    Constant K: the Cholesky factor of ``A_r``, ``A_r^-1 B_r^T`` and the reduced Schur complement are offline, so
+    the online dense work is two triangular solves for ``A_r^-1 b`` and one product with ``B_r``. Varying K:
+    factorisation, ``A_r^-1 B_r^T`` and the Schur complement are recomputed for every query.
+    """
     r_u, r_l = red.r_u, red.r_lambda
-    dense = r_u**3 / 3.0 + 2.0 * r_l * r_u**2 + 2.0 * r_l**2 * r_u
+    if k_varies:
+        dense = r_u**3 / 3.0 + 2.0 * r_l * r_u**2 + 2.0 * r_l**2 * r_u
+    else:
+        dense = 2.0 * r_u**2 + 2.0 * r_l * r_u
     lcp = red.k_rom * ((2.0 / 3.0) * red.m_r_act**3 + 2.0 * r_l * red.m_r_act)
     check = 2.0 * sizes.n_contact * (r_u + r_l)
     return float(flops_projection(sizes, red, c_proj, k_varies) + dense + lcp + check)

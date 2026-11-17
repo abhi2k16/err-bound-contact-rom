@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import numpy as np
 
-from .audit import build_reduced_model, evaluate_query, solve_reduced_timed
+from .audit import build_reduced_model, evaluate_query, reduced_factors, solve_reduced_timed
 from .bases import Snapshots, build_snapshots, pod_primal_basis
 from .benchmark_3d import build_b3
 from .benchmarks import ContactProblem, build_b2
@@ -23,10 +23,17 @@ def predicted_speedups(cfg: Config, sizes: ProblemSizes, red: ReducedSizes, k_fo
             for name, varies in REGIMES.items()}
 
 
-def measured_speedups(fom_times: dict, t_rom_online: float, t_proj: float, t_eta: float) -> dict:
-    """Wall-clock speedups; the K-varying ROM additionally pays the online projection ``t_proj``."""
-    t_rom_aff = t_rom_online + t_eta
-    return {"aff": fom_times["aff"] / t_rom_aff, "var": fom_times["full"] / (t_rom_aff + t_proj)}
+def measured_speedups(fom_times: dict, t_rom_online: float, t_proj: float, t_eta: float,
+                      t_rom_refact: float | None = None) -> dict:
+    """Wall-clock speedups.
+
+    Constant K: the reduced factorisation and Schur complement are offline (``t_rom_online`` excludes them),
+    as the full-order affine model precomputes its factors. Varying K: the ROM additionally pays the online
+    projection ``t_proj`` and re-factorises (``t_rom_refact``; defaults to ``t_rom_online``).
+    """
+    t_aff = t_rom_online + t_eta
+    t_var = (t_rom_online if t_rom_refact is None else t_rom_refact) + t_eta + t_proj
+    return {"aff": fom_times["aff"] / t_aff, "var": fom_times["full"] / t_var}
 
 
 def entry_row(cfg: Config, sizes: ProblemSizes, fom: FomTimings, entry: dict) -> dict:
@@ -36,7 +43,8 @@ def entry_row(cfg: Config, sizes: ProblemSizes, fom: FomTimings, entry: dict) ->
     k_fom, m_act = float(np.median(fom.k_fom)), float(np.median(fom.m_act))
     pred = predicted_speedups(cfg, sizes, red, k_fom, m_act)
     meas = measured_speedups({"aff": float(np.median(fom.t_affine)), "full": float(np.median(fom.t_full))},
-                             float(np.median(entry["t_online"])), float(entry["t_proj"][0]), float(entry["t_eta"][0]))
+                             float(np.median(entry["t_online"])), float(entry["t_proj"][0]), float(entry["t_eta"][0]),
+                             float(np.median(entry["t_online_refact"])))
     return {"r_u": red.r_u, "r_lambda": red.r_lambda, "k_rom": red.k_rom, "m_r": red.m_r_act,
             "S_pred_aff": pred["aff"], "S_meas_aff": meas["aff"], "S_pred_var": pred["var"], "S_meas_var": meas["var"]}
 
@@ -67,11 +75,13 @@ def sweep_one_size(cfg: Config, n_grid: int, builder=sweep_problem) -> dict | No
     mu_test = problem.sample_mu(rng, cfg.e4_n_test)
     V_pod = pod_primal_basis(snaps.U_snap, cfg.r_primal)
     rom, meta = build_reduced_model(problem, cfg, snaps, V_pod, cfg.e4_kind, cfg.e4_r_dual, repair=True)
-    t_online, k_rom, m_r = [], [], []
+    t_online, t_refact, k_rom, m_r = [], [], [], []
+    factors = reduced_factors(rom)
     for mu in mu_test:
         f_vec, c_s = problem.f_vec(mu), -problem.c_vec(mu)
-        runs = [solve_reduced_timed(rom, f_vec, c_s) for _ in range(cfg.e4_repeats)]
+        runs = [solve_reduced_timed(rom, f_vec, c_s, factors) for _ in range(cfg.e4_repeats)]
         t_online.append(min(run.seconds for run in runs))
+        t_refact.append(min(solve_reduced_timed(rom, f_vec, c_s).seconds for _ in range(cfg.e4_repeats)))
         k_rom.append(runs[-1].iterations)
         m_r.append(int(np.sum(runs[-1].lam_r > 1e-12)))
     fom = time_fom_queries(problem, mu_test, cfg.e4_repeats)
@@ -81,7 +91,7 @@ def sweep_one_size(cfg: Config, n_grid: int, builder=sweep_problem) -> dict | No
     k_fom, m_act = float(np.median(fom.k_fom)), float(np.median(fom.m_act))
     pred = predicted_speedups(cfg, sizes, red, k_fom, m_act)
     meas = measured_speedups({"aff": float(np.median(fom.t_affine)), "full": float(np.median(fom.t_full))},
-                             float(np.median(t_online)), meta["t_proj"], meta["t_eta"])
+                             float(np.median(t_online)), meta["t_proj"], meta["t_eta"], float(np.median(t_refact)))
     return {"N": sizes.n_dof, "n_c": sizes.n_contact, "b_w": sizes.bandwidth, "m_act": m_act, "r_u": red.r_u,
             "S_pred_aff": pred["aff"], "S_meas_aff": meas["aff"], "S_pred_var": pred["var"], "S_meas_var": meas["var"]}
 

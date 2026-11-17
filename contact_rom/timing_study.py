@@ -22,7 +22,7 @@ import numpy as np
 
 from rom_engine.contact_dual_basis import ContactROM
 
-from .audit import build_reduced_model, solve_reduced_timed
+from .audit import build_reduced_model, reduced_factors, solve_reduced_timed
 from .bases import build_snapshots, pod_primal_basis
 from .break_even_experiment import (REGIMES, predicted_speedups, sweep_problem, sweep_problem_b3,
                                     sweep_problem_b3_code)
@@ -52,11 +52,13 @@ def measure_size(cfg: Config, problem, seed_offset: int, repeats: int) -> dict |
     rom, meta = build_reduced_model(problem, cfg, snaps, V_pod, cfg.e4_kind, cfg.e4_r_dual, repair=True)
     K0, B0 = problem.K_mat(mu_test[0]), problem.B_mat(mu_test[0])
     offline = assemble_factors(K0, -B0)
-    t_rom, t_aff, t_full, k_rom, m_r, k_fom, m_act = [], [], [], [], [], [], []
+    t_rom, t_rom_aff, t_aff, t_full, k_rom, m_r, k_fom, m_act = [], [], [], [], [], [], [], []
+    factors = reduced_factors(rom)
     for mu in mu_test:
         f_vec, c_s = problem.f_vec(mu), -problem.c_vec(mu)
         runs = [solve_reduced_timed(rom, f_vec, c_s) for _ in range(repeats)]
         t_rom.append([r.seconds for r in runs])
+        t_rom_aff.append([solve_reduced_timed(rom, f_vec, c_s, factors).seconds for _ in range(repeats)])
         k_rom.append(runs[-1].iterations)
         m_r.append(int(np.sum(runs[-1].lam_r > 1e-12)))
         t_aff.append(repeat_times(lambda: fom_solve_with_factor(*offline, -B0, f_vec, c_s), repeats))
@@ -82,7 +84,7 @@ def measure_size(cfg: Config, problem, seed_offset: int, repeats: int) -> dict |
                        float(np.median(m_r)))
     pred = predicted_speedups(cfg, sizes, red, float(np.median(k_fom)), float(np.median(m_act)))
     return {"N": sizes.n_dof, "n_c": sizes.n_contact, "r_u": red.r_u, "S_pred_aff": pred["aff"], "S_pred_var": pred["var"],
-            "t_rom": np.array(t_rom).tolist(), "t_aff": np.array(t_aff).tolist(), "t_full": np.array(t_full).tolist(),
+            "t_rom": np.array(t_rom).tolist(), "t_rom_aff": np.array(t_rom_aff).tolist(), "t_aff": np.array(t_aff).tolist(), "t_full": np.array(t_full).tolist(),
             "t_proj": t_proj.tolist(), "t_eta": t_eta.tolist()}
 
 
@@ -111,11 +113,16 @@ def load(cfg: Config, bench: str) -> dict:
     return json.loads((Path(cfg.out_dir) / "timing_study" / f"timing_{bench}.json").read_text("utf-8"))
 
 
-def speedup_from(t_aff, t_full, t_rom, t_proj, t_eta) -> dict:
-    """Manuscript estimator: median over queries of the best-of-repeats time; ROM adds ``t_eta`` (and ``t_proj``)."""
+def speedup_from(t_aff, t_full, t_rom, t_proj, t_eta, t_rom_aff=None) -> dict:
+    """Manuscript estimator: median over queries of the best-of-repeats time; ROM adds ``t_eta`` (and ``t_proj``).
+
+    ``t_rom_aff`` is the reduced solve with precomputed factors (constant K); ``t_rom`` re-factorises (varying K).
+    Older result files without ``t_rom_aff`` fall back to ``t_rom``.
+    """
     fa, ff, rr = (np.median(np.min(a, axis=-1), axis=-1) for a in (t_aff, t_full, t_rom))
-    rom = rr + np.min(t_eta, axis=-1)
-    return {"aff": fa / rom, "var": ff / (rom + np.min(t_proj, axis=-1))}
+    ra = rr if t_rom_aff is None else np.median(np.min(t_rom_aff, axis=-1), axis=-1)
+    eta = np.min(t_eta, axis=-1)
+    return {"aff": fa / (ra + eta), "var": ff / (rr + eta + np.min(t_proj, axis=-1))}
 
 
 def analyse(data: dict, n_boot: int = 1000, seed: int = 0) -> dict:
@@ -123,17 +130,19 @@ def analyse(data: dict, n_boot: int = 1000, seed: int = 0) -> dict:
     rows = data["rows"]
     rng = np.random.default_rng(seed)
     n_vals = np.array([r["N"] for r in rows], float)
-    arr = [{k: np.array(r[k]) for k in ("t_aff", "t_full", "t_rom", "t_proj", "t_eta")} for r in rows]
+    arr = [{k: np.array(r.get(k, r["t_rom"]) if k == "t_rom_aff" else r[k])
+            for k in ("t_aff", "t_full", "t_rom", "t_rom_aff", "t_proj", "t_eta")} for r in rows]
     per_size, boots = [], {reg: np.empty((n_boot, len(rows))) for reg in REGIMES}
     for i, (r, a) in enumerate(zip(rows, arr)):
         nq, nr = a["t_rom"].shape
-        point = speedup_from(a["t_aff"], a["t_full"], a["t_rom"], a["t_proj"], a["t_eta"])
+        point = speedup_from(a["t_aff"], a["t_full"], a["t_rom"], a["t_proj"], a["t_eta"], a["t_rom_aff"])
         for b in range(n_boot):
             qi = rng.integers(0, nq, nq)
             ri = rng.integers(0, nr, (nq, nr))
             take = lambda t: np.take_along_axis(t[qi], ri, axis=1)
             rp = rng.integers(0, nr, nr)
-            res = speedup_from(take(a["t_aff"]), take(a["t_full"]), take(a["t_rom"]), a["t_proj"][rp], a["t_eta"][rp])
+            res = speedup_from(take(a["t_aff"]), take(a["t_full"]), take(a["t_rom"]), a["t_proj"][rp], a["t_eta"][rp],
+                               take(a["t_rom_aff"]))
             for reg in REGIMES:
                 boots[reg][b, i] = res[reg]
         cv = lambda t: float(np.median(np.std(t, axis=1) / np.mean(t, axis=1)))

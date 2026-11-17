@@ -23,7 +23,7 @@ import numpy as np
 
 from rom_engine.contact_dual_basis import ContactROM
 
-from .audit import build_reduced_model, evaluate_query
+from .audit import build_reduced_model, evaluate_query, reduced_factors
 from .bases import pod_primal_basis
 from .config import Config
 from .cost import ReducedSizes, flops_rom, problem_sizes
@@ -65,7 +65,8 @@ def run_bench(cfg: Config, builder, prepare, bench: str) -> dict:
         ctxs_test = [build_query_context(problem, mu) for mu in mu_test]
         ctxs_val = [build_query_context(problem, mu) for mu in mu_val]
         for key, (rom, meta, V_mat, U_mat) in models.items():
-            test = stack([evaluate_query(c, rom, C_lambda) for c in ctxs_test])
+            fac = reduced_factors(rom)  # constant K: reduced factorisation is offline
+            test = stack([evaluate_query(c, rom, C_lambda, fac) for c in ctxs_test])
             cond = schur_condition(V_mat, U_mat, K0, B0)[0]
             r_u, r_l = int(run_cfg.r_primal + meta["r_rep"]), int(meta["r_dual_eff"])
             flops = flops_rom(sizes, ReducedSizes(r_u, r_l, float(np.median(test["k_rom"])),
@@ -75,7 +76,7 @@ def run_bench(cfg: Config, builder, prepare, bench: str) -> dict:
             slot["arr"].append({"err": test["err_energy"], "res": test["res_red"], "t_rom": test["t_online"],
                                 "t_fom": t_fom, "ok": test["ok"]})
             if key[0] == "pd_repair":
-                val = stack([evaluate_query(c, rom, C_lambda) for c in ctxs_val])
+                val = stack([evaluate_query(c, rom, C_lambda, fac) for c in ctxs_val])
                 tau = threshold("hybrid", val, "eta_adm", run_cfg, tau_rel)
                 flagged = test["eta_adm"] > tau
                 t_screen = test["t_online"] + meta["t_eta"] + flagged * t_fom

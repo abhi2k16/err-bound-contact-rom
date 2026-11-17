@@ -61,26 +61,57 @@ class ReducedSolution:
     seconds: float
 
 
-def solve_reduced_timed(rom: ContactROM, f_vec: np.ndarray, c_suite: np.ndarray) -> ReducedSolution:
+@dataclass
+class ReducedFactors:
+    """Query-independent reduced operators for constant ``K`` (offline stage of the reduced model).
+
+    ``chol`` is the Cholesky factor of ``A_r``, ``Ainv_Bt = A_r^-1 B_r^T`` and ``A_lcp`` the symmetrised reduced
+    Schur complement ``B_r A_r^-1 B_r^T``. With constant ``K`` none of them depends on the query, so they are
+    computed once, exactly as the full-order affine model precomputes ``K^-1`` and ``B K^-1 B^T``.
+    """
+
+    chol: tuple
+    Ainv_Bt: np.ndarray
+    A_lcp: np.ndarray
+
+
+def reduced_factors(rom: ContactROM) -> ReducedFactors:
+    """Factorise ``A_r`` and assemble the reduced Schur complement once (valid only for constant ``K``)."""
+    chol = cho_factor(0.5 * (rom.A_r + rom.A_r.T))
+    Ainv_Bt = cho_solve(chol, rom.B_r.T)
+    A_lcp = rom.B_r @ Ainv_Bt
+    return ReducedFactors(chol, Ainv_Bt, 0.5 * (A_lcp + A_lcp.T))
+
+
+def solve_reduced_timed(rom: ContactROM, f_vec: np.ndarray, c_suite: np.ndarray,
+                        factors: ReducedFactors | None = None) -> ReducedSolution:
     """Reduced contact solve with iteration count and wall time.
 
     Same algebra as ``ContactROM.solve`` / ``solve_reduced_contact``, but calls
     ``lcp_active_set`` directly because the suite wrapper hides the iteration count.
+    With ``factors=None`` the factorisation and the reduced Schur complement are rebuilt inside the timed
+    region (parameter-varying ``K``); with precomputed ``factors`` (constant ``K``) only the query-dependent
+    triangular solves and the active-set solve are timed.
     """
     start = time.perf_counter()
-    chol = cho_factor(0.5 * (rom.A_r + rom.A_r.T))
+    fac = reduced_factors(rom) if factors is None else factors
     b_red, c_red = rom.U.T @ f_vec, rom.U_lam.T @ c_suite
-    Ainv_b, Ainv_Bt = cho_solve(chol, b_red), cho_solve(chol, rom.B_r.T)
-    A_lcp = rom.B_r @ Ainv_Bt
-    lam_r, ok, iters = lcp_active_set(0.5 * (A_lcp + A_lcp.T), rom.B_r @ Ainv_b - c_red)
+    Ainv_b, Ainv_Bt = cho_solve(fac.chol, b_red), fac.Ainv_Bt
+    lam_r, ok, iters = lcp_active_set(fac.A_lcp, rom.B_r @ Ainv_b - c_red)
     u_r = Ainv_b + Ainv_Bt @ lam_r
     seconds = time.perf_counter() - start
     return ReducedSolution(rom.U @ u_r, rom.U_lam @ lam_r, u_r, lam_r, bool(ok), int(iters), seconds)
 
 
-def evaluate_query(ctx: QueryContext, rom: ContactROM, C_lambda: float) -> dict:
-    """All per-query metrics (paper-convention gap ``c - B u~``) for one reduced model."""
-    res = solve_reduced_timed(rom, ctx.f_vec, -ctx.c_vec)
+def evaluate_query(ctx: QueryContext, rom: ContactROM, C_lambda: float,
+                   factors: ReducedFactors | None = None) -> dict:
+    """All per-query metrics (paper-convention gap ``c - B u~``) for one reduced model.
+
+    ``t_online`` uses the precomputed ``factors`` when given (constant ``K``); ``t_online_refact`` always
+    includes the reduced factorisation (what a parameter-varying ``K`` costs per query).
+    """
+    res = solve_reduced_timed(rom, ctx.f_vec, -ctx.c_vec, factors)
+    t_refact = res.seconds if factors is None else solve_reduced_timed(rom, ctx.f_vec, -ctx.c_vec).seconds
     terms = estimator_terms(ctx.K_mat, ctx.B_mat, ctx.f_vec, ctx.c_vec, res.u, res.lam, ctx.K_lu, ctx.B_norm)
     bounds = error_bounds(terms, float(np.linalg.norm(ctx.fom.lam_vec)), C_lambda)
     diff = ctx.fom.u_vec - res.u
@@ -95,6 +126,7 @@ def evaluate_query(ctx: QueryContext, rom: ContactROM, C_lambda: float) -> dict:
         "k_rom": float(res.iterations),
         "m_r_act": float(np.sum(res.lam_r > 1e-12)),
         "t_online": res.seconds,
+        "t_online_refact": t_refact,
         **{k: terms[k] for k in ("eta_eq", "eta_sign", "eta_gap", "eta_comp", "eta_adm")},
         "eta_adm_v2": eta_adm_v2(terms, C_lambda),
         **bounds,
@@ -139,13 +171,15 @@ def run_basis_audit_sets(problem: ContactProblem, cfg: Config, snaps: Snapshots,
     C_lambda = float(np.linalg.norm(snaps.Lam_snap, axis=0).max())
     models = {(kind, r_dual): build_reduced_model(problem, cfg, snaps, V_pod, kind, r_dual, repair)
               for kind in kinds for r_dual in r_dual_list}
+    # constant K: the reduced factorisation is offline; varying K: rebuilt per query inside evaluate_query
+    factors = {key: None if problem.k_varies else reduced_factors(model[0]) for key, model in models.items()}
     audits: dict = {}
     for name, mus in mu_sets.items():
         rows = {key: [] for key in models}
         for mu in mus:
             ctx = build_query_context(problem, mu)
             for key, (rom, _) in models.items():
-                rows[key].append(evaluate_query(ctx, rom_for_query(problem, cfg, rom, ctx), C_lambda))
+                rows[key].append(evaluate_query(ctx, rom_for_query(problem, cfg, rom, ctx), C_lambda, factors[key]))
         audits[name] = {key: finalize_entry(rows[key], models[key][1]) for key in models}
     return audits
 
