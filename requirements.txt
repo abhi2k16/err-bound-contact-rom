@@ -1,0 +1,7 @@
+# Direct dependencies of contact_rom, pinned to the versions used for the reported results (Python 3.14.3).
+numpy==2.5.4
+scipy==1.18.1
+matplotlib==3.11.2
+# The finite-element and reduction packages are installed from the computation suite (editable installs):
+#   pip install -e <path-to>/computation-suite/fea_engine   # version 1.0.1
+#   pip install -e <path-to>/computation-suite/rom_engine   # version 0.2.0

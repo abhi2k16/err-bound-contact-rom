@@ -97,14 +97,14 @@ suite that are **not on PyPI and not included here**:
 
 ```bash
 python -m venv .venv
-.venv/bin/pip install numpy scipy matplotlib          # Windows: .venv\Scripts\pip
+.venv/bin/pip install -r requirements.txt            # pinned versions; Windows: .venv\Scripts\pip
 .venv/bin/pip install -e <path-to>/computation-suite/fea_engine -e <path-to>/computation-suite/rom_engine
 
 python -m contact_rom e1 --bench b1                   # first experiment: silent-failure audit on the spring chain
 ```
 
 Reported results were produced with Python 3.14.3, NumPy 2.5.4 and SciPy 1.18.1. Every run writes these versions and its
-configuration to `results/<run>/config.json`.
+configuration to `results/<run>/config.json`. `requirements-lock.txt` lists every package of that environment.
 
 ## Experiments
 
