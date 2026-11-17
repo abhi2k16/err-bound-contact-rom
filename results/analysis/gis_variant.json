@@ -1,0 +1,46 @@
+{
+ "b1|gis": {
+  "median_err": 0.2121237337531508,
+  "silent_share": 0.613,
+  "accurate_share": 0.387,
+  "eff_dim_median": 12.0,
+  "r_rep_median": 4.5,
+  "recall": 0.9670646356525319,
+  "fpr": 0.0034158838599487617,
+  "n_silent_scored": 2429,
+  "thresholds": "36/40"
+ },
+ "b1|gis2": {
+  "median_err": 0.2121237337531508,
+  "silent_share": 0.613,
+  "accurate_share": 0.387,
+  "eff_dim_median": 12.0,
+  "r_rep_median": 4.5,
+  "recall": 0.9670646356525319,
+  "fpr": 0.0034158838599487617,
+  "n_silent_scored": 2429,
+  "thresholds": "36/40"
+ },
+ "b2|gis": {
+  "median_err": 0.31832179875091193,
+  "silent_share": 0.894,
+  "accurate_share": 0.106,
+  "eff_dim_median": 12.0,
+  "r_rep_median": 2.0,
+  "recall": 0.9801454138702461,
+  "fpr": 0.5377358490566038,
+  "n_silent_scored": 3576,
+  "thresholds": "40/40"
+ },
+ "b2|gis2": {
+  "median_err": 0.3089364911304197,
+  "silent_share": 0.8915,
+  "accurate_share": 0.1085,
+  "eff_dim_median": 12.0,
+  "r_rep_median": 2.0,
+  "recall": 0.9792484576556366,
+  "fpr": 0.5460829493087558,
+  "n_silent_scored": 3566,
+  "thresholds": "40/40"
+ }
+}

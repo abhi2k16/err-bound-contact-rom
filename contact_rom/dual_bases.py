@@ -35,6 +35,31 @@ def gis_dual_basis(Lam_snap: np.ndarray, r_dual: int) -> np.ndarray:
     return np.eye(Lam_snap.shape[0])[:, rows]
 
 
+def gis_alg2_dual_basis(Lam_snap: np.ndarray, r_dual: int, delta: float = 1e-12) -> np.ndarray:
+    """Greedy index selection as stated in Algorithm 2 of Sambataro and Ehrlacher (arXiv:2605.04037), Euclidean norm.
+
+    Start from the snapshot of largest norm. At every step, take the index of the largest entry of the currently
+    selected snapshot among the unselected indices, then select the next snapshot as the one with the largest norm of
+    the part of its multiplier vector outside the selected indices. Stop when that residual norm, relative to the
+    first snapshot norm, is at most ``delta`` or ``r_dual`` indices are selected (so fewer columns can result).
+    """
+    n_c = Lam_snap.shape[0]
+    norms = np.linalg.norm(Lam_snap, axis=0)
+    sigma, norm0 = int(np.argmax(norms)), float(norms.max())
+    chosen: list = []
+    for _ in range(min(r_dual, n_c)):
+        lam = Lam_snap[:, sigma].astype(float).copy()
+        lam[chosen] = -np.inf
+        chosen.append(int(np.argmax(lam)))
+        outside = np.ones(n_c, bool)
+        outside[chosen] = False
+        resid = np.linalg.norm(Lam_snap[outside], axis=0) if outside.any() else np.zeros(Lam_snap.shape[1])
+        if resid.max() <= delta * norm0:
+            break
+        sigma = int(np.argmax(resid))
+    return np.eye(n_c)[:, np.sort(chosen)]
+
+
 def cone_residual(U_cols: np.ndarray, target: np.ndarray) -> float:
     """Distance from ``target`` to ``cone(U_cols)`` (non-negative least squares)."""
     if U_cols.shape[1] == 0:
@@ -92,6 +117,8 @@ def make_dual_basis(kind: str, Lam_snap: np.ndarray, r_dual: int, ctx: BasisCont
         U_mat = cpg_dual_basis(Lam_snap, r_dual)
     elif kind == "gis":
         U_mat = gis_dual_basis(Lam_snap, r_dual)
+    elif kind == "gis2":                      # Algorithm 2 of the cited method, used only in the variant comparison
+        U_mat = gis_alg2_dual_basis(Lam_snap, r_dual)
     elif kind == "rid":
         U_mat = rid_dual_basis(Lam_snap, r_dual, ctx)
     else:
