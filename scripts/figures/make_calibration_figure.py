@@ -1,7 +1,7 @@
 """Calibration-study figure and table from ``results/calibration/analysis_{b1,b2}.pkl``.
 
 Run ``python -m scripts.figures.make_calibration_figure`` after ``python -m contact_rom calibration --bench b1`` (and b2).
-Writes ``figures/fig_calibration.pdf`` and ``tables/calibration_table.tex`` (a ``tabular`` fragment).
+Writes ``manuscript_main/figures/fig_calibration.pdf`` and ``manuscript_main/tables/calibration_table.tex`` (a ``tabular`` fragment).
 Intervals are 95% percentile bootstrap intervals over the eight seeds (the independent units).
 """
 
@@ -73,12 +73,12 @@ def table(n_val: int) -> str:
 
 
 def write_table() -> None:
-    Path("tables").mkdir(exist_ok=True)
+    Path("manuscript_main/tables").mkdir(parents=True, exist_ok=True)
     body = ("\\begin{tabular}{@{}llcccc@{}}\n\\toprule\n & & \\multicolumn{2}{c}{$0.9\\,\\min$ rule} & "
             "\\multicolumn{2}{c}{hybrid rule} \\\\\n\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\n"
             "Bench. & Basis & Recall & Uncal. & Recall & False-alarm rate \\\\\n\\midrule\n")
     for n_val in (40, 200):
-        out = Path("tables") / f"calibration_table_{n_val}.tex"
+        out = Path("manuscript_main/tables") / f"calibration_table_{n_val}.tex"
         out.write_text(body + table(n_val) + "\n\\bottomrule\n\\end{tabular}\n", encoding="utf-8")
         print("wrote", out)
 

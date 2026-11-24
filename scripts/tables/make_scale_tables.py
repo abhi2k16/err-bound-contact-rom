@@ -1,4 +1,4 @@
-"""Tables for the out-of-range and mesh-size studies -> ``tables/extrapolation.tex`` and ``tables/meshsize.tex``."""
+"""Tables for the out-of-range and mesh-size studies -> ``manuscript_main/tables/extrapolation.tex`` and ``manuscript_main/tables/meshsize.tex``."""
 
 import json
 from pathlib import Path
@@ -30,8 +30,8 @@ def extrapolation_table(benches: tuple, out: str) -> None:
 
 def extrapolation() -> None:
     """Main-text table (B1, B2) and the supplementary table of the independent benchmark B4."""
-    extrapolation_table(("b1", "b2"), "tables/extrapolation.tex")
-    extrapolation_table(("b4",), "tables/extrapolation_b4.tex")
+    extrapolation_table(("b1", "b2"), "manuscript_main/tables/extrapolation.tex")
+    extrapolation_table(("b4",), "manuscript_main/tables/extrapolation_b4.tex")
 
 
 def meshsize() -> None:
@@ -48,10 +48,10 @@ def meshsize() -> None:
             lines.append(r"\midrule")
     head = (r"\begin{tabular}{@{}lrrcccrr@{}}" "\n" r"\toprule" "\n"
             r"Bench. & $N$ & $n_c$ & SVD $>5\%$ & NMF $>5\%$ (med.) & gIS $>5\%$ & $S$ NMF & $S$ gIS \\" "\n" r"\midrule" "\n")
-    Path("tables/meshsize.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
+    Path("manuscript_main/tables/meshsize.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
     extrapolation()
     meshsize()
-    print(Path("tables/extrapolation.tex").read_text())
+    print(Path("manuscript_main/tables/extrapolation.tex").read_text())

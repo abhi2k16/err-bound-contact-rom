@@ -1,4 +1,4 @@
-"""Table of the repeated-timing study (``results/timing_study/analysis_{b2,b3}.json``) -> ``tables/timing_table.tex``.
+"""Table of the repeated-timing study (``results/timing_study/analysis_{b2,b3}.json``) -> ``manuscript_main/tables/timing_table.tex``.
 
 Run ``python -m contact_rom timingstudy --bench b2`` and ``--bench b3`` (one at a time, nothing else running), then
 the analysis (``analyse`` in ``contact_rom/timing_study.py``) and this script.
@@ -47,9 +47,9 @@ def main() -> None:
             r" & Regime & $N^*_{\mathrm{pred}}$ & $N^*_{\mathrm{E4}}$ & $N^*_{\mathrm{meas}}$ [95\%] & "
             r"pred/meas & $S_{\mathrm{pred}}$ & $S_{\mathrm{meas}}$ [95\%] \\" "\n" r"\midrule" "\n")
     lines.append(r"\multicolumn{8}{@{}l}{\scriptsize $^{*}$ Break-even size defined in fewer than 90\% of the bootstrap resamples. n/d: no crossing in the swept range.} \\")
-    Path("tables/timing_table.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n",
+    Path("manuscript_main/tables/timing_table.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n",
                                                encoding="utf-8")
-    print(Path("tables/timing_table.tex").read_text())
+    print(Path("manuscript_main/tables/timing_table.tex").read_text())
 
 
 if __name__ == "__main__":

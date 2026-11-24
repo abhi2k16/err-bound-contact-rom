@@ -1,7 +1,7 @@
 """Figure and tables for the matched dual-basis comparison from ``results/basis_comparison/*.json``.
 
 Run ``python -m scripts.figures.make_basis_comparison`` after ``python -m contact_rom basiscomp --bench b1`` (and b2).
-Writes ``figures/fig_basis_cost.pdf``, ``tables/basis_matched_dim.tex`` and ``tables/basis_matched_acc.tex``.
+Writes ``manuscript_main/figures/fig_basis_cost.pdf``, ``manuscript_main/tables/basis_matched_dim.tex`` and ``manuscript_main/tables/basis_matched_acc.tex``.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ def fmt_err(e) -> str:
 
 
 def write_tables() -> None:
-    Path("tables").mkdir(exist_ok=True)
+    Path("manuscript_main/tables").mkdir(parents=True, exist_ok=True)
     # matched effective dimension: median error, with the effective dual / primal dimensions actually used
     lines = []
     for bench, name in (("b1", "B1"), ("b2", "B2")):
@@ -64,7 +64,7 @@ def write_tables() -> None:
             lines.append(r"\midrule")
     head = (r"\begin{tabular}{@{}llccccc@{}}" "\n" r"\toprule" "\n"
             r"Bench. & $r_{\lambda}^{\mathrm{eff}}$ target & SVD & NMF & CPG & gIS & RID \\" "\n" r"\midrule" "\n")
-    Path("tables/basis_matched_dim.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n",
+    Path("manuscript_main/tables/basis_matched_dim.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n",
                                                     encoding="utf-8")
     # matched accuracy: cheapest entry reaching the target median error
     lines = []
@@ -84,7 +84,7 @@ def write_tables() -> None:
             r"Bench. & Median error & SVD & NMF & CPG & gIS & RID \\" "\n" r"\midrule" "\n")
     lines.append(r"\multicolumn{7}{@{}l}{\scriptsize Entries: effective dual / enriched primal dimension, online kFLOPs per query, solve time in $\mu$s.} \\")
     lines.append(r"\multicolumn{7}{@{}l}{\scriptsize ``Not reached'': no entry up to $r_\lambda=30$ (B1) or $60$ (B2) attains the target.} \\")
-    Path("tables/basis_matched_acc.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n",
+    Path("manuscript_main/tables/basis_matched_acc.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n",
                                                     encoding="utf-8")
     print("wrote tables")
 

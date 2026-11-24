@@ -1,10 +1,10 @@
 """Geometry and field figures built with the suite's visualization tools (PyVista via ``fea_engine.visualization``).
 
-Run ``python -m scripts.figures.make_geometry_figures``. Outputs go to ``figures/``:
+Run ``python -m scripts.figures.make_geometry_figures``. Outputs go to ``manuscript_main/figures/``:
   fig_geometry.pdf    B1 chain, B2 membrane, B3 two-body mesh with loads, supports and active contact
   fig_b3_rom.pdf      B3 full-order vs reduced displacement and error, NMF and SVD dual bases (``compare_fields``)
   fig_multiplier.pdf  B2 contact tractions: full order vs lifted reduced multipliers (adhesive values visible)
-Intermediate renderings are written to ``figures/raster/``.
+Intermediate renderings are written to ``manuscript_main/figures/raster/``.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from fea_engine.mesh import Mesh, box_mesh, rectangle_mesh
 from fea_engine.visualization import to_pyvista
 
 pv.OFF_SCREEN = True
-OUT, RASTER = Path("figures"), Path("figures/raster")
+OUT, RASTER = Path("manuscript_main/figures"), Path("manuscript_main/figures/raster")
 BLUE, ORANGE, INK, MUTED = "#2a78d6", "#eb6834", "#0b0b0b", "#52514e"
 plt.rcParams.update({"font.family": "serif", "font.serif": ["Times New Roman", "DejaVu Serif"], "font.size": 8,
                      "mathtext.fontset": "stix", "axes.linewidth": 0.6, "pdf.fonttype": 42})

@@ -1,4 +1,4 @@
-"""Summary table of the independent 3D benchmark B4 -> ``tables/b4_summary.tex``.
+"""Summary table of the independent 3D benchmark B4 -> ``manuscript_main/tables/b4_summary.tex``.
 
 Needs ``results/b4_e3/e3_b4.npz`` (``python -m contact_rom e3 --bench b4``) and ``results/calibration/analysis_b4.pkl``
 (``python -m contact_rom calibration --bench b4``). One row per basis: nominal dual dimension 16 (seed 42, 40 test
@@ -35,9 +35,9 @@ def main() -> None:
                       r"\cmidrule(lr){7-8}",
                       r"Basis & $r_\lambda^{\mathrm{eff}}$ & $r_{\mathrm{rep}}$ & median $\varepsilon_E$ & $>5\%$ (\%) & bound valid (\%) & Eq.~\eqref{eq:eta-adm} & $\eta_{\mathrm{adm,v2}}$ \\",
                       r"\midrule"])
-    Path("tables/b4_summary.tex").write_text(head + "\n" + "\n".join(lines) + "\n" + r"\bottomrule" + "\n" + r"\end{tabular}" + "\n",
+    Path("manuscript_main/tables/b4_summary.tex").write_text(head + "\n" + "\n".join(lines) + "\n" + r"\bottomrule" + "\n" + r"\end{tabular}" + "\n",
                                              encoding="utf-8")
-    print(Path("tables/b4_summary.tex").read_text())
+    print(Path("manuscript_main/tables/b4_summary.tex").read_text())
 
 
 def calibration_table() -> None:
@@ -56,9 +56,9 @@ def calibration_table() -> None:
                       r" & & \multicolumn{2}{c}{$0.9\,\min$ rule} & \multicolumn{2}{c}{hybrid rule} \\",
                       r"\cmidrule(lr){3-4}\cmidrule(lr){5-6}",
                       r"Val. queries & Basis & Recall & Uncal. & Recall & False-alarm rate \\", r"\midrule"])
-    Path("tables/b4_calibration.tex").write_text(head + "\n" + "\n".join(lines) + "\n" + r"\bottomrule" + "\n" + r"\end{tabular}" + "\n",
+    Path("manuscript_main/tables/b4_calibration.tex").write_text(head + "\n" + "\n".join(lines) + "\n" + r"\bottomrule" + "\n" + r"\end{tabular}" + "\n",
                                                  encoding="utf-8")
-    print(Path("tables/b4_calibration.tex").read_text())
+    print(Path("manuscript_main/tables/b4_calibration.tex").read_text())
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 """Publication figures for the manuscript, generated from the saved results in ``results/``.
 
-Run ``python -m scripts.figures.make_figures``; vector PDFs are written to ``figures/``. Palette: first three slots of the
+Run ``python -m scripts.figures.make_figures``; vector PDFs are written to ``manuscript_main/figures/``. Palette: first three slots of the
 validated categorical palette (blue, orange, aqua); multi-basis plots use small multiples, not extra hues.
 """
 
@@ -15,7 +15,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-RES, OUT = Path("results"), Path("figures")
+RES, OUT = Path("results"), Path("manuscript_main/figures")
 BLUE, ORANGE, AQUA, INK, MUTED = "#2a78d6", "#eb6834", "#1baf7a", "#0b0b0b", "#52514e"
 KINDS = ("svd", "nmf", "cpg", "gis", "rid")
 LABEL = {"svd": "SVD", "nmf": "NMF", "cpg": "CPG", "gis": "gIS", "rid": "RID"}
@@ -38,7 +38,7 @@ def pooled(path: Path, kind: str, metric: str) -> np.ndarray:
 
 
 def save(fig, name: str) -> None:
-    OUT.mkdir(exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT / f"{name}.pdf", bbox_inches="tight")
     if os.environ.get("FIG_PREVIEW_DIR"):   # optional raster preview for visual checks
         fig.savefig(Path(os.environ["FIG_PREVIEW_DIR"]) / f"{name}.png", dpi=170, bbox_inches="tight")

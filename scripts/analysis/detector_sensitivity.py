@@ -4,9 +4,9 @@ Reads the audits saved by ``python -m contact_rom calibration`` (``results/calib
 five dual bases, ``r_lambda`` in {4, 8, 12, 16, 24}, 200 validation and 100 test queries per seed) and writes
 
 * ``results/analysis/detectors.json``       recall and false-alarm rate of each indicator used alone,
-* ``tables/detectors.tex``                  the corresponding table,
+* ``manuscript_main/tables/detectors.tex``                  the corresponding table,
 * ``results/analysis/sensitivity.json``    recall, false-alarm rate and counts for other tolerances,
-* ``tables/sensitivity.tex``                the corresponding table.
+* ``manuscript_main/tables/sensitivity.tex``                the corresponding table.
 
 Calibration follows the manuscript's rule: ``tau = 0.9 * min`` of the indicator over the validation silent failures
 (first 40 validation queries); entries without a validation silent failure have no threshold and are left out for
@@ -110,8 +110,8 @@ def main() -> None:
             r" & & \multicolumn{3}{c}{B1} & \multicolumn{3}{c}{B2} \\" "\n"
             r"\cmidrule(lr){3-5}\cmidrule(lr){6-8}" "\n"
             r"Bases & Detector & Recall & FPR & $n_{\mathrm{sf}}$ & Recall & FPR & $n_{\mathrm{sf}}$ \\" "\n" r"\midrule" "\n")
-    Path("tables").mkdir(exist_ok=True)
-    Path("tables/detectors.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
+    Path("manuscript_main/tables").mkdir(parents=True, exist_ok=True)
+    Path("manuscript_main/tables/detectors.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
 
     # ---- sensitivity of the silent-failure definition ----------------------------------------------------------
     srows = []
@@ -130,12 +130,12 @@ def main() -> None:
             r" & & \multicolumn{4}{c}{B1} & \multicolumn{4}{c}{B2} \\" "\n"
             r"\cmidrule(lr){3-6}\cmidrule(lr){7-10}" "\n"
             r"Error threshold & Residual tol. & $n_{\mathrm{sf}}$ & Thresholds & Recall & FPR & $n_{\mathrm{sf}}$ & Thresholds & Recall & FPR \\" "\n" r"\midrule" "\n")
-    Path("tables/sensitivity.tex").write_text(head + "\n".join(srows) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
+    Path("manuscript_main/tables/sensitivity.tex").write_text(head + "\n".join(srows) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
 
     Path("results/analysis").mkdir(parents=True, exist_ok=True)
     Path("results/analysis/detectors_sensitivity.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
-    print(Path("tables/detectors.tex").read_text())
-    print(Path("tables/sensitivity.tex").read_text())
+    print(Path("manuscript_main/tables/detectors.tex").read_text())
+    print(Path("manuscript_main/tables/sensitivity.tex").read_text())
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 
 Same protocol as the calibration study (B1, B2; seeds 42-49; 200 validation and 100 test queries per seed;
 r_lambda in {4, 8, 12, 16, 24}; rank repair). Detection scoring uses the manuscript rule (threshold 0.9 min over the
-first 40 validation silent failures). Writes results/analysis/gis_variant.json and tables/gis_variant.tex.
+first 40 validation silent failures). Writes results/analysis/gis_variant.json and manuscript_main/tables/gis_variant.tex.
 
 Run from the repository root: ``python -m scripts.analysis.gis_variant``.
 """

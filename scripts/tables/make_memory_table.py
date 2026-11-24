@@ -1,5 +1,5 @@
 """Storage comparison, full-order sparse factorization vs reduced dense model -> ``results/memory_study/memory_{b2,b3}.json``
-and ``tables/memory_table.tex``.
+and ``manuscript_main/tables/memory_table.tex``.
 
 Run ``python -m scripts.tables.make_memory_table``. For every mesh size of the break-even sweeps (B2 membrane, B3 two-body) the
 stiffness matrix is factored with the same SuperLU call as in the timing study (``scipy.sparse.linalg.splu``,
@@ -84,8 +84,8 @@ def main() -> None:
         r"Bench. & $N$ & $n_c$ & $\mathrm{nnz}(L{+}U)/\mathrm{nnz}(K)$ & full-order & reduced & reduced + lift & online & with lift \\",
         r"\midrule", *lines, r"\bottomrule", r"\end{tabular}"]
     body = "\n".join(rows_tex) + "\n"
-    Path("tables").mkdir(exist_ok=True)
-    Path("tables/memory_table.tex").write_text(body, encoding="utf-8")
+    Path("manuscript_main/tables").mkdir(parents=True, exist_ok=True)
+    Path("manuscript_main/tables/memory_table.tex").write_text(body, encoding="utf-8")
     print(body)
 
 

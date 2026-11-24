@@ -1,4 +1,4 @@
-"""Nominal vs effective dimension, rank repair, offline and online cost at nominal r_lambda = 16 -> ``tables/basis_effective.tex``."""
+"""Nominal vs effective dimension, rank repair, offline and online cost at nominal r_lambda = 16 -> ``manuscript_main/tables/basis_effective.tex``."""
 
 import json
 from pathlib import Path
@@ -19,8 +19,8 @@ def main() -> None:
     head = (r"\begin{tabular}{@{}llcccccrr@{}}" "\n" r"\toprule" "\n"
             r"Bench. & Method & Nominal $r_\lambda$ & Eff. $r_\lambda$ & Repair $r_{\mathrm{rep}}$ & $r_u$ & "
             r"Offline (ms) & Online (kFLOPs) & Online ($\mu$s) \\" "\n" r"\midrule" "\n")
-    Path("tables/basis_effective.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
-    print(Path("tables/basis_effective.tex").read_text())
+    Path("manuscript_main/tables/basis_effective.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
+    print(Path("manuscript_main/tables/basis_effective.tex").read_text())
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Ablation table from ``results/ablation/ablation_{b1,b2}.json`` -> ``tables/ablation.tex``."""
+"""Ablation table from ``results/ablation/ablation_{b1,b2}.json`` -> ``manuscript_main/tables/ablation.tex``."""
 
 import json
 from pathlib import Path
@@ -33,8 +33,8 @@ def main() -> None:
             lines.append(r"\midrule")
     head = (r"\begin{tabular}{@{}lllrrrrrrrr@{}}" "\n" r"\toprule" "\n"
             r"Bench. & Variant & Basis & Median err. & $>5\%$ (\%) & cond. & $r_u$ & kFLOPs & Speedup & Fallback & Missed \\" "\n" r"\midrule" "\n")
-    Path("tables/ablation.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
-    print(Path("tables/ablation.tex").read_text())
+    Path("manuscript_main/tables/ablation.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
+    print(Path("manuscript_main/tables/ablation.tex").read_text())
 
 
 if __name__ == "__main__":

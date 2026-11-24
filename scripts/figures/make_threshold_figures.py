@@ -1,8 +1,8 @@
 """Threshold sensitivity, false-negative / acceptance trade-off, rule comparison and net speedup with fallback.
 
 Reads ``results/calibration/audits_*.pkl`` and ``analysis_*.pkl`` (``python -m contact_rom calibration``), and the
-membrane timings ``results/b2_e4/e4_b2.npz``. Writes ``figures/fig_threshold_sensitivity.pdf``,
-``figures/fig_tradeoff.pdf``, ``tables/threshold_rules.tex`` and ``tables/net_speedup.tex``.
+membrane timings ``results/b2_e4/e4_b2.npz``. Writes ``manuscript_main/figures/fig_threshold_sensitivity.pdf``,
+``manuscript_main/figures/fig_tradeoff.pdf``, ``manuscript_main/tables/threshold_rules.tex`` and ``manuscript_main/tables/net_speedup.tex``.
 """
 
 from __future__ import annotations
@@ -108,7 +108,7 @@ def rule_table(n_val: int = 40) -> None:
             lines.append(r"\midrule")
     head = (r"\begin{tabular}{@{}llccccc@{}}" "\n" r"\toprule" "\n"
             r"Bench. & Basis & $0.9\min$ & 10th pct. & 25th pct. & cost-optimal & hybrid \\" "\n" r"\midrule" "\n")
-    Path("tables/threshold_rules.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n",
+    Path("manuscript_main/tables/threshold_rules.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n",
                                                   encoding="utf-8")
 
 
@@ -136,8 +136,8 @@ def net_speedup_table(n_val: int = 40, draws: int = 20) -> None:
         lines.append(f"{mf.LABEL[kind]} & {f:.2f} & {s_aff:.2f} & {1 / (1 / s_aff + f):.2f} & {s_var:.1f} & {1 / (1 / s_var + f):.1f} \\\\")
     head = (r"\begin{tabular}{@{}lccccc@{}}" "\n" r"\toprule" "\n"
             r"Basis & fallback share $f$ & $S$ (const. $K$) & net & $S$ (varying $K$) & net \\" "\n" r"\midrule" "\n")
-    Path("tables/net_speedup.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
-    print(Path("tables/net_speedup.tex").read_text())
+    Path("manuscript_main/tables/net_speedup.tex").write_text(head + "\n".join(lines) + "\n" r"\bottomrule" "\n" r"\end{tabular}" "\n", encoding="utf-8")
+    print(Path("manuscript_main/tables/net_speedup.tex").read_text())
 
 
 if __name__ == "__main__":
